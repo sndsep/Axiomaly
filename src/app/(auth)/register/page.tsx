@@ -1,18 +1,19 @@
-'use client'
+// src/app/(auth)/register/page.tsx
+"use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
-} from '@/components/ui/card'
-import Link from 'next/link'
+} from "@/components/ui/card"
+import Link from "next/link"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -23,27 +24,28 @@ export default function RegisterPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    
+
     const formData = new FormData(e.currentTarget)
     
     try {
-      const response = await fetch('/api/auth/register', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           name: formData.get('name'),
           email: formData.get('email'),
           password: formData.get('password'),
         }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Something went wrong')
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
       }
 
+      // Registro exitoso
       router.push('/login?registered=true')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Something went wrong')
@@ -58,7 +60,7 @@ export default function RegisterPage() {
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Get started with Axiomaly
+            Enter your information to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,7 +100,7 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 required
-                placeholder="Create a password"
+                placeholder="Enter your password"
                 disabled={loading}
               />
             </div>

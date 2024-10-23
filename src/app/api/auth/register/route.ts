@@ -1,13 +1,16 @@
 // src/app/api/auth/register/route.ts
 import { hash } from "bcryptjs"
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { prisma } from "@/lib/db" // Asegúrate que sea prisma y no db
 
 export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json()
+    
+    console.log("📝 Registration attempt:", { name, email }); // Log de datos recibidos
 
     if (!name || !email || !password) {
+      console.log("❌ Missing fields:", { name: !!name, email: !!email, password: !!password });
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -15,11 +18,13 @@ export async function POST(req: Request) {
     }
 
     // Comprobar si el usuario ya existe
-    const existingUser = await db.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: {
         email
       }
     })
+    
+    console.log("🔍 Existing user check:", !!existingUser);
 
     if (existingUser) {
       return NextResponse.json(
@@ -29,14 +34,17 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await hash(password, 10)
+    console.log("🔑 Password hashed successfully");
 
-    const user = await db.user.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,
         hashedPassword,
       }
     })
+    
+    console.log("✅ User created successfully:", { id: user.id, email: user.email });
 
     return NextResponse.json({
       user: {
@@ -46,9 +54,9 @@ export async function POST(req: Request) {
     })
 
   } catch (error) {
-    console.error("Registration error:", error)
+    console.error("🚨 Registration error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: String(error) }, // Convertir el error a string para ver más detalles
       { status: 500 }
     )
   }
