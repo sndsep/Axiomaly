@@ -1,40 +1,40 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es2017",
+    "module": "commonjs",
     "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
+      "es2017",
+      "dom"
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
       ]
     },
-    "forceConsistentCasingInFileNames": true
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "next.config.ts" // Asegúrate de que este archivo esté en la ubicación correcta
+    "src/**/*",
+    "prisma/**/*",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

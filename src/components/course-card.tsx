@@ -7,7 +7,15 @@ import { PlayCircle, Clock, Award } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 
 interface CourseCardProps {
-  course: any // Tipado completo pendiente
+  course: {
+    id: string
+    title: string
+    description?: string
+    thumbnail?: string
+    duration?: string
+    level?: string
+    instructor?: string
+  }
   progress: number
 }
 

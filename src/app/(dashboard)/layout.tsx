@@ -1,32 +1,25 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth/auth-config'
+'use client'
+
 import { MainNav } from '@/components/navigation/main-nav'
 import { UserNav } from '@/components/navigation/user-nav'
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
-
-  if (!session) {
-    redirect('/login')
-  }
-
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-background">
-        <div className="container flex h-16 items-center justify-between py-4">
+      <header className="border-b">
+        <div className="container mx-auto flex h-16 items-center px-4">
           <MainNav />
-          <UserNav user={session.user} />
+          <div className="ml-auto flex items-center space-x-4">
+            <UserNav />
+          </div>
         </div>
       </header>
-      <main className="flex-1">
-        <div className="container py-6">
-          {children}
-        </div>
+      <main className="flex-1 container mx-auto px-4 py-6">
+        {children}
       </main>
     </div>
   )

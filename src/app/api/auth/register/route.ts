@@ -1,7 +1,8 @@
 // src/app/api/auth/register/route.ts
 import { hash } from "bcryptjs"
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/db" // Asegúrate que sea prisma y no db
+import prisma from "@/lib/db"
+import { UserRole } from "@prisma/client"
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
     if (!name || !email || !password) {
       console.log("❌ Missing fields:", { name: !!name, email: !!email, password: !!password });
       return NextResponse.json(
-        { message: "Missing required fields" },
+        { error: "Faltan campos requeridos" },
         { status: 400 }
       )
     }
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "User already exists" },
+        { error: "El email ya está registrado" },
         { status: 400 }
       )
     }
@@ -40,23 +41,21 @@ export async function POST(req: Request) {
       data: {
         name,
         email,
-        hashedPassword,
+        hashedPassword
       }
     })
     
-    console.log("✅ User created successfully:", { id: user.id, email: user.email });
+    console.log("✅ Usuario creado:", { id: user.id, email: user.email });
 
-    return NextResponse.json({
-      user: {
-        name: user.name,
-        email: user.email
-      }
-    })
+    return NextResponse.json(
+      { message: "Usuario registrado correctamente" },
+      { status: 201 }
+    )
 
   } catch (error) {
-    console.error("🚨 Registration error:", error);
+    console.error("🚨 Error de registro:", error);
     return NextResponse.json(
-      { message: String(error) }, // Convertir el error a string para ver más detalles
+      { error: "Error al registrar usuario" },
       { status: 500 }
     )
   }

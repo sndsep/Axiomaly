@@ -1,6 +1,5 @@
 // src/app/layout.tsx
-import { SessionProvider } from '@/components/providers/session-provider'
-import { Toaster } from "@/components/ui/toaster"
+import { SessionProviderWrapper } from "@/components/providers/session-provider"
 import './globals.css'
 
 export default function RootLayout({
@@ -11,10 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SessionProvider>
+        <SessionProviderWrapper>
           {children}
-          <Toaster />
-        </SessionProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   )

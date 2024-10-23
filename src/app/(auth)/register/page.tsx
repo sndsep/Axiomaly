@@ -3,126 +3,148 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
 import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/use-toast"
+import Link from "next/link"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import Link from "next/link"
+
+const registerSchema = z.object({
+  name: z.string().min(2, {
+    message: "El nombre debe tener al menos 2 caracteres",
+  }),
+  email: z.string().email({
+    message: "Debe ser un email válido",
+  }),
+  password: z.string().min(4, {
+    message: "La contraseña debe tener al menos 4 caracteres",
+  }),
+})
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  })
 
-    const formData = new FormData(e.currentTarget)
-    
+  async function onSubmit(values: z.infer<typeof registerSchema>) {
     try {
-      const res = await fetch('/api/auth/register', {
+      setIsLoading(true)
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.get('name'),
-          email: formData.get('email'),
-          password: formData.get('password'),
-        }),
+        body: JSON.stringify(values),
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.message)
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error)
       }
 
-      // Registro exitoso
-      router.push('/login?registered=true')
+      toast({
+        title: "Registro exitoso",
+        description: "Tu cuenta ha sido creada correctamente",
+      })
+      
+      router.push('/login')
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Something went wrong')
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al registrar usuario",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-[400px]">
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>
-            Enter your information to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Name
-              </label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                required
-                placeholder="Enter your name"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="Enter your email"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                placeholder="Enter your password"
-                disabled={loading}
-              />
-            </div>
-            {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Registro</CardTitle>
+        <CardDescription>
+          Crea una nueva cuenta para acceder a la plataforma
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contraseña</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Registrando..." : "Registrarse"}
             </Button>
           </form>
-        </CardContent>
-        <CardFooter className="justify-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
+        </Form>
+        <div className="mt-4 text-center">
+          <Link href="/login" className="text-sm text-blue-600 hover:underline">
+            ¿Ya tienes una cuenta? Inicia sesión
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

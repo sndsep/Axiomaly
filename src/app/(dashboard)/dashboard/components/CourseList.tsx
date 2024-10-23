@@ -6,8 +6,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
-import { Select } from "@/components/ui/select"
 import { Search, Filter } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface Course {
   id: string
@@ -26,15 +32,15 @@ interface CourseListProps {
 type FilterStatus = 'all' | 'in-progress' | 'completed'
 
 const filterOptions = [
-  { value: "all", label: "Todos los cursos" },
-  { value: "in-progress", label: "En progreso" },
-  { value: "completed", label: "Completados" }
+  { value: "all", label: "All courses" },
+  { value: "in-progress", label: "In progress" },
+  { value: "completed", label: "Completed" }
 ]
 
 export function CourseList({ initialCourses }: CourseListProps) {
-  const [searchQuery, setSearchQuery] = useState('')
+  const [courses] = useState<Course[]>(initialCourses)
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
-  const [courses, setCourses] = useState(initialCourses)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -49,70 +55,67 @@ export function CourseList({ initialCourses }: CourseListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar cursos..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search courses..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
-        <Select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-          options={filterOptions}
-          placeholder="Filtrar por estado"
-          className="w-[180px]"
-        />
+        <Select onValueChange={(value) => setFilterStatus(value as FilterStatus)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            {filterOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {filteredCourses.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground">No se encontraron cursos</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          // src/app/(dashboard)/dashboard/components/CourseList.tsx
-{filteredCourses.map((course) => (
-  <Link
-    key={course.id}
-    href={`/dashboard/courses/${course.id}`}
-    className="group relative overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md"
-  >
-    <div className="aspect-video relative">
-      <Image
-        src={course.thumbnail || '/images/course-placeholder.jpg'}
-        alt={course.title}
-        fill
-        className="object-cover transition-transform group-hover:scale-105"
-      />
-    </div>
-    <div className="p-4">
-      <h3 className="font-semibold line-clamp-1">{course.title}</h3>
-      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-        {course.description}
-      </p>
-      <div className="mt-4 space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">
-            {course.progress?.completed ? 'Completado' : 'En progreso'}
-          </span>
-          <span className="font-medium">
-            {course.progress?.completed ? '100%' : '0%'}
-          </span>
-        </div>
-        <Progress 
-          value={course.progress?.completed ? 100 : 0} 
-          className="h-2" 
-        />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredCourses.map((course) => (
+          <Link key={course.id} href={`/dashboard/courses/${course.id}`}>
+            <div className="group relative overflow-hidden rounded-lg border bg-background p-2">
+              <div className="aspect-video overflow-hidden rounded-md">
+                {course.thumbnail ? (
+                  <Image
+                    src={course.thumbnail}
+                    alt={course.title}
+                    width={500}
+                    height={300}
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-secondary">
+                    <span className="text-muted-foreground">No thumbnail</span>
+                  </div>
+                )}
+              </div>
+              <div className="p-2">
+                <h3 className="font-semibold">{course.title}</h3>
+                <p className="line-clamp-2 text-sm text-muted-foreground">
+                  {course.description}
+                </p>
+                {course.progress && (
+                  <Progress 
+                    value={course.progress.completed ? 100 : 0} 
+                    className="mt-2"
+                  />
+                )}
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
-    </div>
-  </Link>
-))}
-        </div>
-      )}
     </div>
   )
 }

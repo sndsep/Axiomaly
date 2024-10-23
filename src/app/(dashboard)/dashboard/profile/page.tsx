@@ -4,72 +4,54 @@ import { Input } from "@/components/ui/input"
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth/auth-config'
 
-export default async function ProfilePage() {
-  const session = await getServerSession(authOptions)
+import { ProfileForm } from "./components/profile-form"
+import { PreferencesForm } from "./components/preferences-form"
+import { AccountForm } from "./components/account-form"
 
-  if (!session?.user) {
-    return null
-  }
-
+export default function ProfilePage() {
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Profile</h2>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Perfil</h1>
         <p className="text-muted-foreground">
-          Manage your account settings and preferences.
+          Gestiona tu información personal y preferencias
         </p>
       </div>
-      <div className="grid gap-4">
+
+      <div className="grid gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+            <CardTitle>Perfil</CardTitle>
             <CardDescription>
-              Update your personal details and contact information.
+              Actualiza tu información personal
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name">Name</label>
-              <Input
-                id="name"
-                defaultValue={session.user.name || ''}
-                placeholder="Enter your name"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="email">Email</label>
-              <Input
-                id="email"
-                type="email"
-                defaultValue={session.user.email || ''}
-                placeholder="Enter your email"
-                disabled
-              />
-            </div>
-            <Button>Save Changes</Button>
+          <CardContent>
+            <ProfileForm />
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Preferences</CardTitle>
+            <CardTitle>Preferencias</CardTitle>
             <CardDescription>
-              Customize your learning experience.
+              Configura tus preferencias de la plataforma
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Add preference options here */}
-            <Button variant="outline">Reset Preferences</Button>
+          <CardContent>
+            <PreferencesForm />
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Account</CardTitle>
+            <CardTitle>Cuenta</CardTitle>
             <CardDescription>
-              Manage your account settings.
+              Gestiona la configuración de tu cuenta
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="destructive">Delete Account</Button>
+          <CardContent>
+            <AccountForm />
           </CardContent>
         </Card>
       </div>
