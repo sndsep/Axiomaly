@@ -1,17 +1,11 @@
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { NextAuthOptions } from "next-auth"
-import { db } from "@/lib/db/db"
+import { compare } from "bcryptjs"
+import { AuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
+import { db } from "@/lib/db"
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(db),
-  session: {
-    strategy: "jwt"
-  },
-  pages: {
-    signIn: "/login",
-  },
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -21,55 +15,34 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
+          throw new Error("Missing credentials")
         }
 
         const user = await db.user.findUnique({
           where: {
             email: credentials.email
           }
-        });
+        })
 
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials");
+        if (!user || !user.hashedPassword) {
+          throw new Error("Invalid credentials")
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        const isValid = await compare(credentials.password, user.hashedPassword)
 
         if (!isValid) {
-          throw new Error("Invalid credentials");
+          throw new Error("Invalid credentials")
         }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        }
+        return user
       }
     })
   ],
-  callbacks: {
-    async session({ token, session }) {
-      if (token) {
-        session.user.id = token.id
-        session.user.name = token.name
-        session.user.email = token.email
-        session.user.role = token.role
-      }
-
-      return session
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = user.role
-      }
-
-      return token
-    }
-  }
+  session: {
+    strategy: "jwt"
+  },
+  pages: {
+    signIn: "/login"
+  },
+  debug: process.env.NODE_ENV === "development",
 }

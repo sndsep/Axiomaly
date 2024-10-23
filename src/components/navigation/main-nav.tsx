@@ -14,12 +14,12 @@ const navItems = [
     href: '/dashboard/courses',
   },
   {
-    title: 'Projects',
-    href: '/dashboard/projects',
-  },
-  {
     title: 'Resources',
     href: '/dashboard/resources',
+  },
+  {
+    title: 'Profile',
+    href: '/dashboard/profile',
   },
 ]
 

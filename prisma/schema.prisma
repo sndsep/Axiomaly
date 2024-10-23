@@ -8,17 +8,20 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String    @unique
-  password      String?
-  role          UserRole  @default(STUDENT)
+  email         String?    @unique
+  hashedPassword String?   // Añadimos esta línea
   emailVerified DateTime?
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          UserRole   @default(STUDENT)
   accounts      Account[]
   sessions      Session[]
+  progress      Progress[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("users")
 }
 
 model Account {
@@ -34,10 +37,10 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
@@ -46,6 +49,47 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Course {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  thumbnail   String?
+  resources   Resource[]
+  progress    Progress[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("courses")
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  url         String
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("resources")
+}
+
+model Progress {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String
+  completed    Boolean  @default(false)
+  lastAccessed DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("progress")
 }
 
 enum UserRole {
@@ -53,3 +97,4 @@ enum UserRole {
   INSTRUCTOR
   ADMIN
 }
+

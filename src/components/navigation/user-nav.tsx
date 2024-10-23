@@ -12,7 +12,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
-export function UserNav({ user }: { user: any }) {
+interface User {
+  name?: string | null
+  email?: string | null
+}
+
+export function UserNav({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

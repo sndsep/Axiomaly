@@ -4,11 +4,11 @@ import { authOptions } from '@/lib/auth/auth-config'
 import { MainNav } from '@/components/navigation/main-nav'
 import { UserNav } from '@/components/navigation/user-nav'
 
-interface DashboardLayoutProps {
+export default async function DashboardLayout({
+  children,
+}: {
   children: React.ReactNode
-}
-
-export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+}) {
   const session = await getServerSession(authOptions)
 
   if (!session) {
@@ -16,16 +16,18 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   }
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background">
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
           <MainNav />
           <UserNav user={session.user} />
         </div>
       </header>
-      <div className="container flex w-full flex-1 flex-col">
-        {children}
-      </div>
-    </main>
+      <main className="flex-1">
+        <div className="container py-6">
+          {children}
+        </div>
+      </main>
+    </div>
   )
 }
