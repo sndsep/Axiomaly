@@ -24,7 +24,7 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             {/* Avatar image with fallback to first letter of name or email */}
-            <AvatarImage src={user?.avatar || ""} alt="Profile Avatar" />
+            <AvatarImage src={user?.image || ""} alt="Profile Avatar" />
             <AvatarFallback>
               {user?.name?.charAt(0) || user?.email?.charAt(0)}
             </AvatarFallback>

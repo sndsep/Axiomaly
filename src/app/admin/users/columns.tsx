@@ -4,6 +4,13 @@ import { ColumnDef } from "@tanstack/react-table"
 import { UserRole } from "@/types/roles"
 import { RoleSelector } from "./role-selector"
 
+interface User {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+}
+
 export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "name",
@@ -18,7 +25,6 @@ export const columns: ColumnDef<User>[] = [
     header: "Role",
     cell: ({ row }) => {
       const user = row.original
-
       return (
         <RoleSelector 
           userId={user.id}

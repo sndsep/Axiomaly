@@ -15,7 +15,7 @@ enum UserRole {
 
 model Account {
   id                String  @id @default(cuid())
-  userId            String
+  userId            Int
   type              String
   provider          String
   providerAccountId String
@@ -35,21 +35,21 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       String
+  userId       Int
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String    @unique
-  hashedPassword String?
-  role           UserRole  @default(STUDENT)
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  name           String
+  hashedPassword String
+  role           UserRole
+  bio            String?  @db.Text
   avatar         String?
-  bio            String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   accounts         Account[]
   sessions         Session[]
@@ -71,7 +71,7 @@ model Course {
   id           String   @id @default(cuid())
   title        String
   description  String?
-  instructorId String
+  instructorId Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   resources    Resource[]
@@ -94,7 +94,7 @@ model Resource {
 
 model StudentProgress {
   id        String   @id @default(cuid())
-  userId    String
+  userId    Int
   courseId  String
   progress  Int      @default(0)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -109,14 +109,14 @@ model Activity {
   id          String   @id @default(cuid())
   description String
   createdAt   DateTime @default(now())
-  userId      String
+  userId      Int
   user        User     @relation(fields: [userId], references: [id])
 }
 
 model Enrollment {
   id        String   @id @default(cuid())
   status    String   @default("IN_PROGRESS")
-  userId    String
+  userId    Int
   courseId  String
   user      User     @relation(fields: [userId], references: [id])
   course    Course   @relation(fields: [courseId], references: [id])

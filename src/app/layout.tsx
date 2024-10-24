@@ -1,18 +1,13 @@
 // src/app/layout.tsx
-import { SessionProviderWrapper } from "@/components/providers/session-provider"
+import { ReactNode } from 'react'
 import './globals.css'
+import { SessionProvider } from '@/components/providers/session-provider'
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body>
-        <SessionProviderWrapper>
-          {children}
-        </SessionProviderWrapper>
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   )

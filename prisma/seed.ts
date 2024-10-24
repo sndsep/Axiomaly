@@ -26,7 +26,7 @@ async function main() {
     data: {
       email: 'admin@example.com',
       name: 'Admin User',
-      hashedPassword: await hash('password123', 12),
+      hashedPassword: "$2a$12$4qOmqwf8KKCXgMnpxph3vuIQu4ClER6kpvABXEGxHsNM3PvGgEC..",
       role: 'ADMIN',
     },
   })

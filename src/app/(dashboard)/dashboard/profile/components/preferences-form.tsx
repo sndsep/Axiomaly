@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 const preferencesFormSchema = z.object({
   emailNotifications: z.boolean(),
@@ -35,38 +36,46 @@ export function PreferencesForm() {
 
   function onSubmit(data: PreferencesFormValues) {
     toast({
-      title: "Preferencias actualizadas",
-      description: "Tus preferencias han sido guardadas.",
+      title: "Preferences updated",
+      description: "Your preferences have been saved.",
     })
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="emailNotifications"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Notificaciones por Email
-                </FormLabel>
-                <FormDescription>
-                  Recibe notificaciones por email sobre tu progreso
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Guardar cambios</Button>
-      </form>
-    </Form>
+    <Card>
+      <CardHeader>
+        <CardTitle>Preferences</CardTitle>
+        <CardDescription>
+          Manage your notification and display settings
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="emailNotifications"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">
+                    Notificaciones por Email
+                  </FormLabel>
+                  <FormDescription>
+                    Recibe notificaciones por email sobre tu progreso
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <Button type="submit">Guardar cambios</Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

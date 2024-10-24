@@ -1,6 +1,8 @@
 export enum UserRole {
-  ADMIN = "ADMIN",
-  INSTRUCTOR = "INSTRUCTOR",
-  STUDENT = "STUDENT"
+  ADMIN = "admin",
+  INSTRUCTOR = "instructor",
+  STUDENT = "student"
 }
+
+export type Role = 'ADMIN' | 'INSTRUCTOR' | 'STUDENT'
 

@@ -23,18 +23,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
-const registerSchema = z.object({
-  name: z.string().min(2, {
-    message: "El nombre debe tener al menos 2 caracteres",
-  }),
-  email: z.string().email({
-    message: "Debe ser un email válido",
-  }),
-  password: z.string().min(4, {
-    message: "La contraseña debe tener al menos 4 caracteres",
-  }),
-})
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { registerSchema } from "@/models/registerSchema"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -146,3 +137,7 @@ export default function RegisterPage() {
     </Card>
   )
 }
+
+export const registerSchema = z.object({
+  // Definición del esquema
+})

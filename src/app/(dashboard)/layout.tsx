@@ -11,16 +11,12 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center px-4">
+        <div className="container flex h-16 items-center justify-between">
           <MainNav />
-          <div className="ml-auto flex items-center space-x-4">
-            <UserNav />
-          </div>
+          <UserNav />
         </div>
       </header>
-      <main className="flex-1 container mx-auto px-4 py-6">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   )
 }

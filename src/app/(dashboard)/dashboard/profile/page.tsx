@@ -8,52 +8,18 @@ import { ProfileForm } from "./components/profile-form"
 import { PreferencesForm } from "./components/preferences-form"
 import { AccountForm } from "./components/account-form"
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    redirect('/login')
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Perfil</h1>
-        <p className="text-muted-foreground">
-          Gestiona tu información personal y preferencias
-        </p>
-      </div>
-
+    <div className="container mx-auto py-6">
+      <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
       <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Perfil</CardTitle>
-            <CardDescription>
-              Actualiza tu información personal
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ProfileForm />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferencias</CardTitle>
-            <CardDescription>
-              Configura tus preferencias de la plataforma
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PreferencesForm />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Cuenta</CardTitle>
-            <CardDescription>
-              Gestiona la configuración de tu cuenta
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AccountForm />
-          </CardContent>
-        </Card>
+        <ProfileForm />
+        <PreferencesForm />
       </div>
     </div>
   )

@@ -58,15 +58,13 @@ export function ProfileForm() {
     defaultValues: {
       name: session?.user?.name || "",
       bio: session?.user?.bio || "",
-      avatar: session?.user?.avatar || "", // Cambiado de image a avatar
+      avatar: session?.user?.avatar || "",
     },
   })
 
   async function onSubmit(data: ProfileFormValues) {
     setIsLoading(true)
     try {
-      console.log('Enviando datos:', data) // Para debugging
-
       const response = await fetch("/api/profile/update", {
         method: "PATCH",
         headers: {
@@ -75,30 +73,32 @@ export function ProfileForm() {
         body: JSON.stringify(data),
       })
 
-      const responseData = await response.json()
-      console.log('Respuesta:', responseData) // Para debugging
+      const result = await response.json()
 
-      if (!response.ok) throw new Error(responseData.message || "Failed to update profile")
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update profile')
+      }
 
-      // Actualiza la sesión con los nuevos datos
+      // Update the session with the new user data
       await update({
         ...session,
         user: {
           ...session?.user,
           name: data.name,
-          avatar: data.avatar, // Cambiado de image a avatar
           bio: data.bio,
+          avatar: data.avatar,
         },
       })
 
-      router.refresh()
-      
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: "Success",
+        description: "Profile updated successfully",
       })
+
+      // Force a hard refresh of the page
+      window.location.reload()
     } catch (error) {
-      console.error('Error updating profile:', error) // Para debugging
+      console.error('Profile update error:', error)
       toast({
         title: "Error",
         description: error.message || "Failed to update profile",
@@ -109,25 +109,26 @@ export function ProfileForm() {
     }
   }
 
-  // Actualizar el formulario cuando se sube una nueva imagen
-  const handleAvatarUpload = (url: string) => {
+  const handleAvatarUpload = async (url: string) => {
     form.setValue("avatar", url)
-    // Actualizar la vista previa inmediatamente
-    update({
-      ...session,
-      user: {
-        ...session?.user,
-        avatar: url, // Cambiado de image a avatar
-      },
+    
+    // Get current form values
+    const currentValues = form.getValues()
+    
+    // Submit the form with current values and new avatar
+    await onSubmit({
+      name: currentValues.name || session?.user?.name || "",
+      bio: currentValues.bio || session?.user?.bio || "",
+      avatar: url,
     })
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile</CardTitle>
+        <CardTitle>Personal Information</CardTitle>
         <CardDescription>
-          Update your profile information
+          Update your personal details and profile picture
         </CardDescription>
       </CardHeader>
       <CardContent>

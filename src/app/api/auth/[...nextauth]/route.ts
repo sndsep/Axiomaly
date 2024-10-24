@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import prisma from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { sendVerificationEmail } from "@/lib/email"
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -39,6 +40,10 @@ export const authOptions: AuthOptions = {
           throw new Error("Credenciales invalidas");
         }
 
+        if (user) {
+          await sendVerificationEmail(user.email);
+        }
+
         return user;
       }
     })
@@ -67,6 +72,9 @@ export const authOptions: AuthOptions = {
     strategy: "jwt"
   },
   secret: process.env.NEXTAUTH_SECRET,
+  refreshToken: {
+    maxAge: 30 * 24 * 60 * 60, // 30 días
+  },
 }
 
 const handler = NextAuth(authOptions)
