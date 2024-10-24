@@ -18,11 +18,12 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (users) {
-      setData(users)
+      console.log('Usuarios recibidos:', users);
+      setData(users);
     }
-  }, [users])
+  }, [users]);
 
-  if (isLoading) return <div>Cargando...</div>
+  if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
 
   return (

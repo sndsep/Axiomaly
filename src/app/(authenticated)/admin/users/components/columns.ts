@@ -4,7 +4,7 @@ import { User } from "@/types/user"
 export const columns = [
   {
     id: 'name',
-    label: 'Nombre',
+    label: 'Name',
     renderCell: (row: User) => row.name,
   },
   {
@@ -14,7 +14,7 @@ export const columns = [
   },
   {
     id: 'role',
-    label: 'Rol',
+    label: 'Role',
     renderCell: (row: User) => row.role,
   },
 ]

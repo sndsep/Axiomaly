@@ -17,44 +17,56 @@ interface UploadAvatarProps {
 
 export function UploadAvatar({ currentAvatar, onUploadComplete }: UploadAvatarProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const [previewUrl, setPreviewUrl] = useState(currentAvatar)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
     if (!file) return
 
-    console.log('Selected file:', file) // Debug log
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPEG, PNG or GIF image.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsUploading(true)
+
+    const formData = new FormData()
+    formData.append('file', file)
 
     try {
-      setIsUploading(true)
-      const formData = new FormData()
-      formData.append('file', file)
-
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
 
-      const data = await response.json()
-      console.log('Upload response:', data) // Debug log
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to upload image')
+        throw new Error('Upload failed')
       }
 
-      setPreviewUrl(data.url)
+      const data = await response.json()
       onUploadComplete(data.url)
-      
       toast({
-        title: "Success",
-        description: "Profile picture updated successfully",
+        title: "Avatar updated",
+        description: "Your profile picture has been updated successfully.",
       })
     } catch (error) {
       console.error('Upload error:', error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to upload image",
+        title: "Upload failed",
+        description: "There was an error uploading your image. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -63,29 +75,26 @@ export function UploadAvatar({ currentAvatar, onUploadComplete }: UploadAvatarPr
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center space-x-4">
       <Avatar className="h-24 w-24">
-        <AvatarImage src={previewUrl || ""} alt="Profile picture" />
+        <AvatarImage src={currentAvatar || undefined} alt="Profile picture" />
         <AvatarFallback>
           <User className="h-12 w-12" />
         </AvatarFallback>
       </Avatar>
-      
-      <div>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="image/jpeg,image/png,image/gif"
-          className="hidden"
-        />
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-        >
-          {isUploading ? "Uploading..." : "Change picture"}
-        </Button>
-      </div>
+      <Button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+      >
+        {isUploading ? 'Uploading...' : 'Change Avatar'}
+      </Button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept={ALLOWED_MIME_TYPES.join(',')}
+        className="hidden"
+      />
     </div>
   )
 }

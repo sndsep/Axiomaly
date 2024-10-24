@@ -6,7 +6,7 @@ import { hash } from "bcryptjs"
 const prisma = new PrismaClient()
 
 async function cleanDatabase() {
-  // Eliminar registros en orden para respetar las restricciones de clave foránea
+  // Delete records in order to respect foreign key constraints
   await prisma.activity.deleteMany()
   await prisma.resource.deleteMany()
   await prisma.enrollment.deleteMany()
@@ -17,11 +17,11 @@ async function cleanDatabase() {
 }
 
 async function main() {
-  console.log('🧹 Limpiando base de datos...')
+  console.log('🧹 Cleaning database...')
   await cleanDatabase()
-  console.log('✨ Base de datos limpia')
+  console.log('✨ Database clean')
 
-  // Crear usuario admin
+  // Create admin user
   const admin = await prisma.user.create({
     data: {
       email: 'admin@example.com',
@@ -30,9 +30,9 @@ async function main() {
       role: 'ADMIN',
     },
   })
-  console.log('👤 Admin creado')
+  console.log('👤 Admin created')
 
-  // Crear instructor
+  // Create instructor
   const instructor = await prisma.user.create({
     data: {
       email: 'instructor@example.com',
@@ -41,9 +41,9 @@ async function main() {
       role: 'INSTRUCTOR',
     },
   })
-  console.log('👨‍🏫 Instructor creado')
+  console.log('👨‍🏫 Instructor created')
 
-  // Crear estudiante
+  // Create student
   const student = await prisma.user.create({
     data: {
       email: 'student@example.com',
@@ -52,20 +52,20 @@ async function main() {
       role: 'STUDENT',
     },
   })
-  console.log('🎓 Estudiante creado')
+  console.log('🎓 Student created')
 
-  // Crear cursos
+  // Create courses
   const courses = await Promise.all([
     prisma.course.create({
       data: {
-        title: 'Introducción a JavaScript',
-        description: 'Aprende los fundamentos de JavaScript desde cero',
+        title: 'Introduction to JavaScript',
+        description: 'Learn JavaScript fundamentals from scratch',
         instructorId: instructor.id,
         resources: {
           create: [
             {
-              title: 'Guía de JavaScript',
-              description: 'Manual completo de JavaScript',
+              title: 'JavaScript Guide',
+              description: 'Complete JavaScript manual',
               url: '/resources/js-guide.pdf',
             }
           ]
@@ -74,14 +74,14 @@ async function main() {
     }),
     prisma.course.create({
       data: {
-        title: 'React Avanzado',
-        description: 'Domina React y sus patrones avanzados',
+        title: 'Advanced React',
+        description: 'Master React and its advanced patterns',
         instructorId: instructor.id,
         resources: {
           create: [
             {
-              title: 'Patrones en React',
-              description: 'Guía de patrones avanzados',
+              title: 'React Patterns',
+              description: 'Guide to advanced patterns',
               url: '/resources/react-patterns.pdf',
             }
           ]
@@ -90,14 +90,14 @@ async function main() {
     }),
     prisma.course.create({
       data: {
-        title: 'Node.js para Principiantes',
-        description: 'Construye aplicaciones backend con Node.js',
+        title: 'Node.js for Beginners',
+        description: 'Build backend applications with Node.js',
         instructorId: instructor.id,
         resources: {
           create: [
             {
               title: 'Node.js Basics',
-              description: 'Fundamentos de Node.js',
+              description: 'Node.js fundamentals',
               url: '/resources/nodejs-basics.pdf',
             }
           ]
@@ -105,9 +105,9 @@ async function main() {
       },
     }),
   ])
-  console.log('📚 Cursos creados')
+  console.log('📚 Courses created')
 
-  // Crear matrículas
+  // Create enrollments
   await Promise.all(courses.map(course => 
     prisma.enrollment.create({
       data: {
@@ -117,32 +117,32 @@ async function main() {
       }
     })
   ))
-  console.log('📝 Matrículas creadas')
+  console.log('📝 Enrollments created')
 
-  // Crear actividades
+  // Create activities
   await Promise.all([
     prisma.activity.create({
       data: {
         userId: student.id,
-        description: 'Completó el módulo 1 de JavaScript',
+        description: 'Completed JavaScript module 1',
       }
     }),
     prisma.activity.create({
       data: {
         userId: student.id,
-        description: 'Comenzó el curso de React Avanzado',
+        description: 'Started Advanced React course',
       }
     }),
     prisma.activity.create({
       data: {
         userId: student.id,
-        description: 'Descargó recursos de Node.js',
+        description: 'Downloaded Node.js resources',
       }
     }),
   ])
-  console.log('📊 Actividades creadas')
+  console.log('📊 Activities created')
 
-  console.log('✅ Seed completado!')
+  console.log('✅ Seed completed!')
 }
 
 main()

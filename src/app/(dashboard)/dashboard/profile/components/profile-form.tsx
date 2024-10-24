@@ -35,73 +35,63 @@ const profileFormSchema = z.object({
   bio: z.string().max(500, {
     message: "Bio cannot exceed 500 characters",
   }).optional(),
-  // Modificamos la validación del avatar para aceptar rutas locales
-  avatar: z.string()
-    .refine((value) => {
-      // Acepta URLs y rutas locales que empiecen con /uploads/
-      return value.startsWith('/uploads/') || value.startsWith('http');
-    }, {
-      message: "Invalid avatar path",
-    })
-    .optional(),
+  avatar: z.string().optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export function ProfileForm() {
   const { data: session, update } = useSession()
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: session?.user?.name || "",
-      bio: session?.user?.bio || "",
-      avatar: session?.user?.avatar || "",
+      bio: "",
+      avatar: session?.user?.image || "",
     },
   })
 
   async function onSubmit(data: ProfileFormValues) {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/profile/update", {
-        method: "PATCH",
+      const response = await fetch('/api/profile/update', {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       })
 
-      const result = await response.json()
-
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to update profile')
+        throw new Error('Failed to update profile')
       }
 
-      // Update the session with the new user data
+      const updatedUser = await response.json()
+      
+      // Actualizar la sesión con los nuevos datos
       await update({
         ...session,
         user: {
           ...session?.user,
-          name: data.name,
-          bio: data.bio,
-          avatar: data.avatar,
+          name: updatedUser.name,
+          image: updatedUser.image, // Cambiado de 'avatar' a 'image'
         },
       })
 
       toast({
-        title: "Success",
-        description: "Profile updated successfully",
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
       })
-
-      // Force a hard refresh of the page
-      window.location.reload()
+      
+      router.refresh()
     } catch (error) {
       console.error('Profile update error:', error)
       toast({
         title: "Error",
-        description: error.message || "Failed to update profile",
+        description: "Failed to update profile. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -109,36 +99,33 @@ export function ProfileForm() {
     }
   }
 
-  const handleAvatarUpload = async (url: string) => {
-    form.setValue("avatar", url)
-    
-    // Get current form values
-    const currentValues = form.getValues()
-    
-    // Submit the form with current values and new avatar
-    await onSubmit({
-      name: currentValues.name || session?.user?.name || "",
-      bio: currentValues.bio || session?.user?.bio || "",
-      avatar: url,
-    })
-  }
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
-        <CardDescription>
-          Update your personal details and profile picture
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <UploadAvatar
-              currentAvatar={form.watch("avatar")}
-              onUploadComplete={handleAvatarUpload}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+            <CardDescription>
+              Update your profile information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="avatar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Profile Picture</FormLabel>
+                  <FormControl>
+                    <UploadAvatar
+                      currentAvatar={field.value}
+                      onUploadComplete={(url) => form.setValue('avatar', url)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            
             <FormField
               control={form.control}
               name="name"
@@ -152,7 +139,6 @@ export function ProfileForm() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="bio"
@@ -161,22 +147,24 @@ export function ProfileForm() {
                   <FormLabel>Bio</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Tell us about yourself..."
+                      placeholder="Tell us a little about yourself"
                       className="resize-none"
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>
+                    You can @mention other users and organizations to link to them.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save changes"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Updating..." : "Update profile"}
+        </Button>
+      </form>
+    </Form>
   )
 }

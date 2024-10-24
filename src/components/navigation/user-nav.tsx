@@ -12,21 +12,38 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export function UserNav() {
-  // Get session data using useSession hook for real-time updates
-  const { data: session } = useSession()
-  const user = session?.user
+  const { data: session, update } = useSession()
+  const [avatarUrl, setAvatarUrl] = useState(session?.user?.image || '')
+
+  useEffect(() => {
+    const updateAvatar = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/user/${session.user.id}`)
+          if (response.ok) {
+            const userData = await response.json()
+            setAvatarUrl(userData.image)
+            await update({ ...session, user: { ...session.user, image: userData.image } })
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+        }
+      }
+    }
+    updateAvatar()
+  }, [session, update])
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            {/* Avatar image with fallback to first letter of name or email */}
-            <AvatarImage src={user?.image || ""} alt="Profile Avatar" />
+            <AvatarImage src={avatarUrl} alt="Profile Avatar" />
             <AvatarFallback>
-              {user?.name?.charAt(0) || user?.email?.charAt(0)}
+              {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0)}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -34,9 +51,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name}</p>
+            <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user?.email}
+              {session?.user?.email}
             </p>
           </div>
         </DropdownMenuLabel>

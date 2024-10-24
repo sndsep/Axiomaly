@@ -3,7 +3,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -25,22 +24,28 @@ import {
 } from "@/components/ui/card"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { registerSchema } from "@/models/registerSchema"
+import * as z from "zod"
+
+const registerSchema = z.object({
+  nombre: z.string().min(1, "El nombre es requerido"),
+  correo: z.string().email("Correo electrónico inválido"),
+  contraseña: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+})
 
 export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
+      nombre: "",
+      correo: "",
+      contraseña: "",
     },
   })
 
-  async function onSubmit(values: z.infer<typeof registerSchema>) {
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
       setIsLoading(true)
       const response = await fetch('/api/auth/register', {
@@ -48,7 +53,7 @@ export default function RegisterPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
@@ -57,15 +62,15 @@ export default function RegisterPage() {
       }
 
       toast({
-        title: "Registro exitoso",
-        description: "Tu cuenta ha sido creada correctamente",
+        title: "Registration successful",
+        description: "Your account has been created successfully",
       })
       
       router.push('/login')
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Error al registrar usuario",
+        description: error instanceof Error ? error.message : "Error registering user",
         variant: "destructive",
       })
     } finally {
@@ -76,61 +81,59 @@ export default function RegisterPage() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Registro</CardTitle>
+        <CardTitle>Register</CardTitle>
         <CardDescription>
-          Crea una nueva cuenta para acceder a la plataforma
+          Create a new account to access the platform
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contraseña</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Registrando..." : "Registrarse"}
-            </Button>
-          </form>
-        </Form>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={control}
+            name="nombre"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nombre</FormLabel>
+                <FormControl>
+                  <Input {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage>{errors.nombre?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="correo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Correo electrónico</FormLabel>
+                <FormControl>
+                  <Input type="email" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage>{errors.correo?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={register}
+            name="contraseña"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage>{errors.contraseña?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Registering..." : "Register"}
+          </Button>
+        </form>
         <div className="mt-4 text-center">
           <Link href="/login" className="text-sm text-blue-600 hover:underline">
-            ¿Ya tienes una cuenta? Inicia sesión
+            Already have an account? Log in
           </Link>
         </div>
       </CardContent>

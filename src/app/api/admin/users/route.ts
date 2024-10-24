@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/auth-config"; // Asegúrate de que esta ruta sea correcta
+import { authOptions } from "@/lib/auth/auth-config";
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -8,8 +8,10 @@ const prisma = new PrismaClient()
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
+    console.log('Session:', session);
 
     if (!session || session.user?.role !== 'ADMIN') {
+      console.log('No autorizado');
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
@@ -23,9 +25,11 @@ export async function GET() {
       },
     });
 
+    console.log('Users:', users);
     return NextResponse.json(users);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
+

@@ -6,19 +6,18 @@ import { UserRole } from "@prisma/client"
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json()
-    
-    console.log("📝 Registration attempt:", { name, email }); // Log de datos recibidos
+    const { name, email, password } = await req.json();
+    console.log("📝 Registration attempt:", { name, email });
 
     if (!name || !email || !password) {
       console.log("❌ Missing fields:", { name: !!name, email: !!email, password: !!password });
       return NextResponse.json(
-        { error: "Faltan campos requeridos" },
+        { error: "Missing required fields" },
         { status: 400 }
       )
     }
 
-    // Comprobar si el usuario ya existe
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: {
         email
@@ -29,7 +28,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "El email ya está registrado" },
+        { error: "Email is already registered" },
         { status: 400 }
       )
     }
@@ -45,17 +44,17 @@ export async function POST(req: Request) {
       }
     })
     
-    console.log("✅ Usuario creado:", { id: user.id, email: user.email });
+    console.log("✅ User created:", { id: user.id, email: user.email });
 
     return NextResponse.json(
-      { message: "Usuario registrado correctamente" },
+      { message: "User registered successfully" },
       { status: 201 }
     )
 
   } catch (error) {
-    console.error("🚨 Error de registro:", error);
+    console.error("🚨 Registration error:", error);
     return NextResponse.json(
-      { error: "Error al registrar usuario" },
+      { error: "Error registering user" },
       { status: 500 }
     )
   }
