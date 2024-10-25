@@ -1,61 +1,35 @@
 // src/app/api/auth/register/route.ts
-import { hash } from "bcryptjs"
+import { hash } from "bcrypt"
 import { NextResponse } from "next/server"
-import prisma from "@/lib/db"
-import { UserRole } from "@prisma/client"
+import { db } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
-    console.log("📝 Registration attempt:", { name, email });
+    const { nombre, correo, contraseña } = await req.json()
 
-    if (!name || !email || !password) {
-      console.log("❌ Missing fields:", { name: !!name, email: !!email, password: !!password });
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      )
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: {
-        email
-      }
+    // Check if the user already exists
+    const existingUser = await db.user.findUnique({
+      where: { email: correo }
     })
-    
-    console.log("🔍 Existing user check:", !!existingUser);
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "Email is already registered" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "User already exists" }, { status: 400 })
     }
 
-    const hashedPassword = await hash(password, 10)
-    console.log("🔑 Password hashed successfully");
-
-    const user = await prisma.user.create({
+    // Create the new user
+    const hashedPassword = await hash(contraseña, 10)
+    const newUser = await db.user.create({
       data: {
-        name,
-        email,
-        hashedPassword
+        name: nombre,
+        email: correo,
+        hashedPassword,
+        role: 'STUDENT', // Add a default role
       }
     })
-    
-    console.log("✅ User created:", { id: user.id, email: user.email });
 
-    return NextResponse.json(
-      { message: "User registered successfully" },
-      { status: 201 }
-    )
-
+    return NextResponse.json({ message: "User registered successfully" }, { status: 201 })
   } catch (error) {
-    console.error("🚨 Registration error:", error);
-    return NextResponse.json(
-      { error: "Error registering user" },
-      { status: 500 }
-    )
+    console.error("Error registering user:", error)
+    return NextResponse.json({ error: "Error registering user" }, { status: 500 })
   }
 }

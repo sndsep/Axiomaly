@@ -20,7 +20,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
         </main>
         <footer className="border-t">
           <div className="container mx-auto px-4 py-4 text-center">
-            © {new Date().getFullYear()} Tu Aplicación
+            © {new Date().getFullYear()} Your Application
           </div>
         </footer>
       </div>

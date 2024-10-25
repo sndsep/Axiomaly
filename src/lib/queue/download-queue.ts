@@ -34,7 +34,7 @@ downloadQueue.process(async (job) => {
     await processDownload(userId, resourceId, fileName)
     return { success: true }
   } catch (error) {
-    console.error('Error en cola de descarga:', error)
+    console.error('Download queue error:', error)
     throw error
   }
 })

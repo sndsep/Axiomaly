@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { User } from "lucide-react"
 
-// Constantes de validación
+// Validation constants
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 

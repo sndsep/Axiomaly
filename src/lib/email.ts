@@ -1,6 +1,6 @@
 export async function sendVerificationEmail(email: string) {
-  // Implementa la lógica para enviar el email de verificación aquí
-  console.log(`Enviando email de verificación a ${email}`);
-  // Por ahora, solo registramos en consola. En un entorno de producción,
-  // aquí implementarías la lógica real para enviar emails.
+  // Implement the logic to send the verification email here
+  console.log(`Sending verification email to ${email}`);
+  // For now, just log to console. In a production environment,
+  // you would implement the actual logic to send emails here.
 }

@@ -22,7 +22,7 @@ interface DataTableProps<T> {
 }
 
 export function DataTable<T>({ columns, data }: DataTableProps<T>) {
-  console.log('Datos para la tabla:', data);
+  console.log('Data for the table:', data);
   return (
     <div className="rounded-md border">
       <Table>

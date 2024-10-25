@@ -18,7 +18,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (users) {
-      console.log('Usuarios recibidos:', users);
+      console.log('Users received:', users);
       setData(users);
     }
   }, [users]);

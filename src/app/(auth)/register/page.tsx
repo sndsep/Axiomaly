@@ -3,7 +3,18 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Form,
   FormControl,
@@ -14,29 +25,20 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
-import Link from "next/link"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 
 const registerSchema = z.object({
-  nombre: z.string().min(1, "El nombre es requerido"),
-  correo: z.string().email("Correo electrónico inválido"),
-  contraseña: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+  nombre: z.string().min(1, "Name is required"),
+  correo: z.string().email("Invalid email address"),
+  contraseña: z.string().min(8, "Password must be at least 8 characters long"),
 })
+
+type RegisterFormValues = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nombre: "",
@@ -45,7 +47,7 @@ export default function RegisterPage() {
     },
   })
 
-  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     try {
       setIsLoading(true)
       const response = await fetch('/api/auth/register', {
@@ -87,50 +89,52 @@ export default function RegisterPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={control}
-            name="nombre"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre</FormLabel>
-                <FormControl>
-                  <Input {...field} disabled={isLoading} />
-                </FormControl>
-                <FormMessage>{errors.nombre?.message}</FormMessage>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="correo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Correo electrónico</FormLabel>
-                <FormControl>
-                  <Input type="email" {...field} disabled={isLoading} />
-                </FormControl>
-                <FormMessage>{errors.correo?.message}</FormMessage>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={register}
-            name="contraseña"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" {...field} disabled={isLoading} />
-                </FormControl>
-                <FormMessage>{errors.contraseña?.message}</FormMessage>
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Registering..." : "Register"}
-          </Button>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="nombre"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="correo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contraseña"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Registering..." : "Register"}
+            </Button>
+          </form>
+        </Form>
         <div className="mt-4 text-center">
           <Link href="/login" className="text-sm text-blue-600 hover:underline">
             Already have an account? Log in
@@ -140,7 +144,3 @@ export default function RegisterPage() {
     </Card>
   )
 }
-
-export const registerSchema = z.object({
-  // Definición del esquema
-})

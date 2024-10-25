@@ -4,5 +4,5 @@ export interface Course {
     description?: string
     instructor?: string
     enrolled?: boolean
-    // Agrega más propiedades según necesites
+    // Add more properties as needed
   }

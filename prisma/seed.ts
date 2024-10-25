@@ -26,7 +26,7 @@ async function main() {
     data: {
       email: 'admin@example.com',
       name: 'Admin User',
-      hashedPassword: "$2a$12$4qOmqwf8KKCXgMnpxph3vuIQu4ClER6kpvABXEGxHsNM3PvGgEC..",
+      hashedPassword: await hash('password123', 12), // Hash the password 'password123'
       role: 'ADMIN',
     },
   })
@@ -108,12 +108,19 @@ async function main() {
   console.log('📚 Courses created')
 
   // Create enrollments
+  const lesson = await prisma.lesson.create({
+    data: {
+      title: 'Sample Lesson',
+      // other fields as necessary
+    }
+  })
+
   await Promise.all(courses.map(course => 
     prisma.enrollment.create({
       data: {
         userId: student.id,
         courseId: course.id,
-        status: Math.random() > 0.5 ? 'COMPLETED' : 'IN_PROGRESS',
+        lessonId: lesson.id, // Add the lessonId here
       }
     })
   ))

@@ -58,10 +58,10 @@ export function PreferencesForm() {
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">
-                    Notificaciones por Email
+                    Email Notifications
                   </FormLabel>
                   <FormDescription>
-                    Recibe notificaciones por email sobre tu progreso
+                    Receive email notifications about your progress
                   </FormDescription>
                 </div>
                 <FormControl>
@@ -73,7 +73,7 @@ export function PreferencesForm() {
               </FormItem>
             )}
           />
-          <Button type="submit">Guardar cambios</Button>
+          <Button type="submit">Save changes</Button>
         </form>
       </CardContent>
     </Card>

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 
 export function UserNav() {
   const { data: session, update } = useSession()
@@ -22,14 +23,28 @@ export function UserNav() {
     const updateAvatar = async () => {
       if (session?.user?.id) {
         try {
-          const response = await fetch(`/api/user/${session.user.id}`)
-          if (response.ok) {
-            const userData = await response.json()
-            setAvatarUrl(userData.image)
-            await update({ ...session, user: { ...session.user, image: userData.image } })
+          const response = await fetch('/api/avatar/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ /* datos necesarios */ }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update avatar');
           }
+
+          const result = await response.json();
+          // Lógica para manejar el resultado...
         } catch (error) {
-          console.error('Error fetching user data:', error)
+          console.error('Error fetching user data:', error);
+          toast({
+            title: "Error",
+            description: error instanceof Error ? error.message : "An unknown error occurred",
+            variant: "destructive",
+          });
         }
       }
     }

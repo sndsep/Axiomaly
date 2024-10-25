@@ -12,7 +12,7 @@ export function handleApiError(error: unknown, res: NextApiResponse) {
     return res.status(error.statusCode).json({ error: error.message });
   }
 
-  return res.status(500).json({ error: 'Error interno del servidor' });
+  return res.status(500).json({ error: 'Internal server error' });
 }
 
 // Uso en una ruta API
@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Lógica de la ruta
     if (someCondition) {
-      throw new AppError('Mensaje de error específico', 400);
+      throw new AppError('Specific error message', 400);
     }
   } catch (error) {
     handleApiError(error, res);

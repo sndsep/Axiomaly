@@ -11,7 +11,7 @@ export async function GET() {
     console.log('Session:', session);
 
     if (!session || session.user?.role !== 'ADMIN') {
-      console.log('No autorizado');
+      console.log('Unauthorized');
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
@@ -28,8 +28,7 @@ export async function GET() {
     console.log('Users:', users);
     return NextResponse.json(users);
   } catch (error) {
-    console.error('Error al obtener usuarios:', error);
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    console.error('Error fetching users:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

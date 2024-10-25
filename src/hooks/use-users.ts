@@ -17,6 +17,7 @@ export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<ErrorResponse | null>(null);
+  const [data, setData] = useState<any[]>([]); // Asegúrate de que el tipo sea correcto
 
   useEffect(() => {
     const fetchUsers = async () => {

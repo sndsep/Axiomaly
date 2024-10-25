@@ -32,7 +32,7 @@ export function CourseCard({ course, progress }: CourseCardProps) {
         },
         body: JSON.stringify({
           courseId: course.id,
-          completed: Math.min(progress + 10, 100) // Incrementa 10% cada vez
+          completed: Math.min(progress + 10, 100) // Increases 10% each time
         })
       })
 

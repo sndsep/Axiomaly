@@ -3,13 +3,13 @@ import { getToken } from 'next-auth/jwt'
 import { nanoid } from 'nanoid'
 
 export async function securityMiddleware(req: Request) {
-  // Generar ID de rastreo único
+  // Generate unique tracking ID
   const requestId = nanoid()
   
-  // Validar token y permisos
+  // Validate token and permissions
   const token = await getToken({ req })
   
-  // Headers de seguridad
+  // Security headers
   const headers = new Headers({
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -19,7 +19,7 @@ export async function securityMiddleware(req: Request) {
     'Content-Security-Policy': "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
   })
 
-  // Verificar método HTTP permitido
+  // Verify allowed HTTP method
   const allowedMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   if (!allowedMethods.includes(req.method)) {
     return new NextResponse(null, {

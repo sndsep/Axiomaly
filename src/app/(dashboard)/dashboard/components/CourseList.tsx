@@ -40,7 +40,7 @@ export function CourseList({ initialCourses }: CourseListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState<'all' | 'in-progress' | 'completed'>('all')
 
-  // Implementar lógica de filtrado y búsqueda aquí
+  // Implement filtering and search logic here
 
   return (
     <div className="space-y-4">

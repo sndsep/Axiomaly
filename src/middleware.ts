@@ -41,7 +41,7 @@ export default withAuth(
     const ip = req.ip || 'anonymous'
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
-        { error: 'Demasiadas solicitudes. Intente más tarde.' },
+        { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       )
     }

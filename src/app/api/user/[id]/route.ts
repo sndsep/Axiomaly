@@ -24,7 +24,7 @@ export async function GET(
         id: true,
         name: true,
         email: true,
-        image: true, // Usamos 'image' en lugar de 'avatar'
+        avatar: true, // Cambiado de 'image' a 'avatar'
       },
     })
 

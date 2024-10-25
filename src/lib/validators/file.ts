@@ -6,10 +6,10 @@ export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "im
 export const fileValidator = z.object({
   file: z
     .instanceof(File)
-    .refine((file) => file.size <= MAX_FILE_SIZE, "El archivo excede el tamaño máximo de 5MB")
+    .refine((file) => file.size <= MAX_FILE_SIZE, "The file exceeds the maximum size of 5MB")
     .refine(
       (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
-      "Formato de archivo no soportado"
+      "Unsupported file format"
     ),
 })
 

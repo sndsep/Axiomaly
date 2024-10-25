@@ -24,9 +24,9 @@ interface ProgressData {
 }
 
 const timeRangeOptions = [
-  { value: "week", label: "Última semana" },
-  { value: "month", label: "Último mes" },
-  { value: "year", label: "Último año" }
+  { value: "week", label: "Last week" },
+  { value: "month", label: "Last month" },
+  { value: "year", label: "Last year" }
 ]
 
 function generateProgressData(range: TimeRange): ProgressData[] {
@@ -42,7 +42,7 @@ function generateProgressData(range: TimeRange): ProgressData[] {
       days = 30
       break
     case 'year':
-      days = 12 // Usamos meses en lugar de días para el año
+      days = 12 // We use months instead of days for the year
       break
     default:
       days = 7
@@ -58,10 +58,10 @@ function generateProgressData(range: TimeRange): ProgressData[] {
     
     data.push({
       date: range === 'year'
-        ? date.toLocaleDateString('es-ES', { month: 'short' })
-        : date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }),
-      completed: Math.floor(Math.random() * 40) + 60, // Número entre 60-100
-      time: Math.floor(Math.random() * 120) + 30 // Minutos entre 30-150
+        ? date.toLocaleDateString('en-US', { month: 'short' })
+        : date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }),
+      completed: Math.floor(Math.random() * 40) + 60, // Number between 60-100
+      time: Math.floor(Math.random() * 120) + 30 // Minutes between 30-150
     })
   }
   
@@ -75,12 +75,12 @@ export function ProgressChart() {
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold">Progreso del Aprendizaje</h3>
+        <h3 className="text-lg font-semibold">Learning Progress</h3>
         <Select
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value as TimeRange)}
           options={timeRangeOptions}
-          placeholder="Seleccionar período"
+          placeholder="Select period"
           className="w-[180px]"
         />
       </div>
@@ -111,10 +111,10 @@ export function ProgressChart() {
                     <div className="rounded-lg border bg-background p-3 shadow-md">
                       <p className="text-sm font-medium mb-1">{label}</p>
                       <p className="text-sm text-muted-foreground">
-                        Completado: {payload[0].value}%
+                        Completed: {payload[0].value}%
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Tiempo: {payload[1].value} minutos
+                        Time: {payload[1].value} minutes
                       </p>
                     </div>
                   )
@@ -127,7 +127,7 @@ export function ProgressChart() {
               yAxisId="left"
               type="monotone"
               dataKey="completed"
-              name="Completado"
+              name="Completed"
               stroke="#2563eb"
               strokeWidth={2}
               dot={{ fill: '#2563eb' }}
@@ -136,7 +136,7 @@ export function ProgressChart() {
               yAxisId="right"
               type="monotone"
               dataKey="time"
-              name="Tiempo (min)"
+              name="Time (min)"
               stroke="#16a34a"
               strokeWidth={2}
               dot={{ fill: '#16a34a' }}

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card"
 import { UploadAvatar } from "@/components/ui/upload-avatar"
 
+// Define the schema for profile form validation
 const profileFormSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters",
@@ -71,13 +72,13 @@ export function ProfileForm() {
 
       const updatedUser = await response.json()
       
-      // Actualizar la sesión con los nuevos datos
+      // Update the session with the new data
       await update({
         ...session,
         user: {
           ...session?.user,
           name: updatedUser.name,
-          image: updatedUser.image, // Cambiado de 'avatar' a 'image'
+          avatar: updatedUser.avatar, // Changed from 'image' to 'avatar'
         },
       })
 
@@ -86,7 +87,8 @@ export function ProfileForm() {
         description: "Your profile has been updated successfully.",
       })
       
-      router.refresh()
+      // Uncomment if you need to refresh the page
+      // router.refresh()
     } catch (error) {
       console.error('Profile update error:', error)
       toast({

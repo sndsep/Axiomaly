@@ -13,7 +13,7 @@ const ICON_MAP = {
 }
 
 interface ResourceCardProps {
-  resource: any // Tipado completo pendiente
+  resource: any // Complete typing pending
 }
 
 export function ResourceCard({ resource }: ResourceCardProps) {
@@ -34,7 +34,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
       if (!response.ok) throw new Error('Download failed')
 
       const data = await response.json()
-      // Aquí iniciarías la descarga real
+      // Here you would start the actual download
       window.open(data.downloadUrl, '_blank')
 
       toast({

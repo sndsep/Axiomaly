@@ -10,7 +10,7 @@ const sidebarNavItems = [
     title: "Usuarios",
     href: "/admin/users",
   },
-  // Añade más elementos según sea necesario
+  // Add more items as needed
 ]
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
