@@ -1,5 +1,6 @@
 // src/components/auth/login-form.tsx
 // This component is used to handle the login form.
+
 'use client'
 
 import { useState } from 'react'
