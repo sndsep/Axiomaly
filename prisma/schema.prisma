@@ -1,0 +1,220 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  USER
+  INSTRUCTOR
+  STUDENT
+}
+
+enum CareerPath {
+  SHORT_COURSE
+  DEGREE_PROGRAM
+}
+
+enum OnboardingStep {
+  CAREER_PATH
+  INTERESTS
+  EXPERIENCE
+  GOALS
+  SCHEDULE
+  BACKGROUND
+  PORTFOLIO
+  MENTORSHIP
+  RECOMMENDATIONS
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                    String      @id @default(cuid())
+  name                  String?
+  email                 String?     @unique
+  emailVerified        DateTime?
+  bio                   String?
+  image                String?
+  hashedPassword       String?
+  role                 Role        @default(STUDENT)
+  careerPath           CareerPath?  // Using enum instead of String
+  hasCompletedOnboarding Boolean    @default(false)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  // Relations
+  accounts           Account[]
+  sessions           Session[]
+  taughtCourses      Course[]           @relation("InstructorCourses")
+  progress           StudentProgress[]
+  activities         Activity[]
+  enrollments        Enrollment[]
+  preferences        UserPreferences?
+  onboardingProgress OnboardingProgress?
+  deadlines          Deadline[]
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  instructorId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  resources    Resource[]
+  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id])
+  enrollments  Enrollment[] @relation("CourseEnrollments")
+  progress     StudentProgress[]
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  url         String
+  downloads   Int      @default(0)
+  courseId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  course      Course   @relation(fields: [courseId], references: [id])
+}
+
+model StudentProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  progress    Int      @default(0)
+  lastUpdated DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id])
+  course      Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  description String
+  createdAt   DateTime @default(now())
+  userId      String
+  
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  status    EnrollmentStatus @default(ACTIVE)
+  lessonId  String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  progress  Float    @default(0)
+  
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id])
+
+  @@index([userId])
+  @@index([courseId])
+  @@unique([userId, courseId])
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  title       String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  enrollments Enrollment[]
+}
+
+model UserPreferences {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  weeklyGoal        Int?     // Hours per week for learning
+  learningPath      String?  // Specific focus area or specialization
+  timezone          String?  // User's timezone for scheduling
+  emailNotifications Boolean @default(true)
+  marketingEmails    Boolean @default(true)
+  courseUpdates      Boolean @default(true)
+  preferredTags      String[] // Areas of interest
+  portfolio          String?  // Portfolio URL
+  linkedin           String?
+  twitter            String?
+  
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model OnboardingProgress {
+  id                     String       @id @default(cuid())
+  userId                 String       @unique
+  currentStep            OnboardingStep @default(CAREER_PATH)
+  completed             Boolean      @default(false)
+  responses             Json?        // Survey responses
+  selectedCourse        String?      // For SHORT_COURSE path
+  viewedRecommendations Boolean      @default(false)
+  acceptedCurriculum    Boolean      @default(false) // For DEGREE_PROGRAM path
+  selectedSpecializations String[]    @default([])   // For DEGREE_PROGRAM path
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  
+  user                 User          @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Deadline {
+  id        String   @id @default(cuid())
+  userId    String
+  dueDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
+
