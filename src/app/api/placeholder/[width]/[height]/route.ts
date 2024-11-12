@@ -1,38 +1,36 @@
 // src/app/api/placeholder/[width]/[height]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { createCanvas } from 'canvas';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { width: string; height: string } }
 ) {
-  const width = parseInt(params.width);
-  const height = parseInt(params.height);
+  const width = parseInt(await params.width);
+  const height = parseInt(await params.height);
 
-  // Validate dimensions
-  if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
-    return new NextResponse('Invalid dimensions', { status: 400 });
-  }
+  // Create canvas
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
 
-  // Create SVG placeholder
-  const svg = `
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="#F3F4F6"/>
-      <text 
-        x="50%" 
-        y="50%" 
-        font-family="Arial" 
-        font-size="14" 
-        fill="#6B7280" 
-        text-anchor="middle" 
-        dy=".3em"
-      >${width}x${height}</text>
-    </svg>
-  `;
+  // Fill background
+  ctx.fillStyle = '#f0f0f0';
+  ctx.fillRect(0, 0, width, height);
 
-  // Return the SVG with appropriate headers
-  return new NextResponse(svg, {
+  // Draw placeholder text
+  ctx.fillStyle = '#999999';
+  ctx.font = `${Math.min(width, height) / 10}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${width}x${height}`, width / 2, height / 2);
+
+  // Convert to buffer
+  const buffer = canvas.toBuffer('image/png');
+
+  // Return response
+  return new Response(buffer, {
     headers: {
-      'Content-Type': 'image/svg+xml',
+      'Content-Type': 'image/png',
       'Cache-Control': 'public, max-age=31536000, immutable',
     },
   });

@@ -1,11 +1,9 @@
 // src/app/(auth)/onboarding/layout.tsx
-
-// This layout handles the onboarding process for students
-
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { Toaster } from "@/components/ui/forms/toaster"
+import { ProgressBar } from "@/components/onboarding/ProgressBar"
 
 export default async function OnboardingLayout({
   children,
@@ -20,7 +18,8 @@ export default async function OnboardingLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4">
+        <ProgressBar />
         {children}
       </main>
       <Toaster />

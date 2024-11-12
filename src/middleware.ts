@@ -1,73 +1,57 @@
 // src/middleware.ts
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
-import type { NextRequestWithAuth } from "next-auth/middleware";
-
-const publicPaths = [
-  '/',
-  '/login',
-  '/register',
-  '/about',
-  '/pricing',
-  '/contact',
-  '/public'
-];
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from 'next/server'
+import type { NextRequestWithAuth } from "next-auth/middleware"
 
 export default withAuth(
-  async function middleware(req: NextRequestWithAuth) {
-    const { pathname } = req.nextUrl;
+  function middleware(req: NextRequestWithAuth) {
+    const { pathname } = req.nextUrl
     
-    // Always allow public paths
-    if (publicPaths.some(path => pathname.startsWith(path))) {
-      return NextResponse.next();
+    // If user is not authenticated and tries to access protected routes
+    if (!req.nextauth.token && !pathname.startsWith('/login') && !pathname.startsWith('/register')) {
+      return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    // Get the token from the session
-    const token = req.nextauth.token;
-
-    // Protected routes logic
-    if (token) {
-      // If authenticated but not completed onboarding, redirect to onboarding
-      // except when already on onboarding paths
-      if (!token.hasCompletedOnboarding && !pathname.startsWith('/onboarding')) {
-        return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
-      }
-
-      // If trying to access auth pages while logged in
-      if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
-      }
+    // If user is authenticated and tries to access auth pages
+    if (req.nextauth.token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 
     // Add security headers
-    const response = NextResponse.next();
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    const response = NextResponse.next()
+    response.headers.set('X-Frame-Options', 'DENY')
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
-    return response;
+    return response
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
+        const { pathname } = req.nextUrl
         
-        // Allow access to public paths without authentication
-        if (publicPaths.some(path => pathname.startsWith(path))) {
-          return true;
-        }
+        // Allow access to public paths
+        if (pathname.startsWith('/public')) return true
+        if (pathname === '/') return true
+        if (pathname.startsWith('/login')) return true
+        if (pathname.startsWith('/register')) return true
+        if (pathname.startsWith('/api/auth')) return true
         
         // Require authentication for all other paths
-        return !!token;
+        return !!token
       },
     },
   }
-);
+)
 
 export const config = {
   matcher: [
-    // Match all paths except static assets and API routes
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    /*
+     * Match all request paths except:
+     * 1. /api routes that don't start with /api/auth
+     * 2. /_next (static files)
+     * 3. /favicon.ico, /sitemap.xml, /robots.txt (static files)
+     */
+    '/((?!api/(?!auth)|_next/|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
-};
+}

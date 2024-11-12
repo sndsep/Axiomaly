@@ -7,12 +7,12 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Slider } from '@/components/ui/slider';
+} from '@/components/ui/forms/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/forms/radio-group';
+import { Checkbox } from '@/components/ui/forms/checkbox';
+import { Input } from '@/components/ui/forms/input';
+import { Textarea } from '@/components/ui/forms/textarea';
+import { Slider } from '@/components/ui/forms/slider';
 import { UseFormReturn } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 

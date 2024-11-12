@@ -3,11 +3,10 @@ import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
-import CourseRecommendations from "@/components/onboarding/CourseRecommendations"
+import CourseRecommendations from "@/components/onboarding/short-course/Recommendations"
 
 export default async function RecommendationsPage() {
   const session = await getServerSession(authOptions)
-  
   if (!session?.user?.email) {
     redirect('/login')
   }

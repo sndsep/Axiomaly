@@ -1,117 +1,105 @@
 // src/app/api/auth/register/route.ts
-
-import { NextResponse } from "next/server"
-import { hash } from "bcryptjs"
-import { prisma } from "@/lib/prisma"
-import * as z from "zod"
-
-const userSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
+import { NextResponse } from "next/server";
+import { hash } from "bcryptjs";
+import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    // Log the incoming request
-    console.log('Incoming registration request')
+    const body = await req.json();
+    const { email, name, password } = body;
 
-    // Check if the request is valid
-    if (!req.body) {
-      console.log('No request body found')
-      return new NextResponse(
-        JSON.stringify({ error: 'Request body is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+    console.log("Incoming registration request");
+    console.log("Request body:", { ...body, password: '[REDACTED]' });
+
+    if (!email || !name || !password) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    // Parse the request body
-    let body
-    try {
-      body = await req.json()
-      console.log('Parsed request body:', { ...body, password: '[REDACTED]' })
-    } catch (e) {
-      console.log('Failed to parse request body:', e)
-      return new NextResponse(
-        JSON.stringify({ error: 'Invalid request body' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
+    // Check if user exists
+    const exists = await prisma.user.findUnique({
+      where: {
+        email: email.toLowerCase(),
+      },
+    });
 
-    // Validate the request data
-    const validationResult = userSchema.safeParse(body)
-    if (!validationResult.success) {
-      console.log('Validation failed:', validationResult.error)
-      return new NextResponse(
-        JSON.stringify({ 
-          error: 'Validation failed', 
-          details: validationResult.error.errors 
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const { name, email, password } = validationResult.data
-
-    // Check for existing user
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      return new NextResponse(
-        JSON.stringify({ error: 'User already exists' }),
-        { status: 409, headers: { 'Content-Type': 'application/json' } }
-      )
+    if (exists) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 400 }
+      );
     }
 
     // Hash password
-    const hashedPassword = await hash(password, 12)
+    const hashedPassword = await hash(password, 12);
 
-    // Create the user
+    // Create user with explicit onboarding status
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: email.toLowerCase(),
         hashedPassword,
-        role: 'STUDENT',
+        role: "STUDENT",
         hasCompletedOnboarding: false,
+        careerPath: null,
+        // Create preferences inline
+        preferences: {
+          create: {
+            emailNotifications: true,
+            marketingEmails: false,
+            courseUpdates: true,
+            preferredTags: []
+          }
+        },
+        // Create onboarding progress inline
+        onboardingProgress: {
+          create: {
+            currentStep: "CAREER_PATH",
+            completed: false,
+            responses: {}
+          }
+        }
       },
-    })
-
-    // Remove sensitive data
-    const { hashedPassword: _, ...safeUser } = user
-
-    // Return success response
-    return new NextResponse(
-      JSON.stringify({
-        success: true,
-        user: safeUser,
-      }),
-      { 
-        status: 201, 
-        headers: { 'Content-Type': 'application/json' } 
+      // Include these relations in the response
+      include: {
+        preferences: true,
+        onboardingProgress: true
       }
-    )
+    });
+
+    console.log("Created new user:", {
+      id: user.id,
+      email: user.email,
+      hasCompletedOnboarding: user.hasCompletedOnboarding,
+      careerPath: user.careerPath
+    });
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        hasCompletedOnboarding: user.hasCompletedOnboarding
+      }
+    }, { 
+      status: 201,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
 
   } catch (error) {
-    // Log the error safely
-    console.log('Registration error:', {
-      name: error?.name,
-      message: error?.message,
-      stack: error?.stack
-    })
-
-    // Return error response
-    return new NextResponse(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        message: 'Failed to create user'
-      }),
+    console.error("Registration error:", error);
+    
+    return NextResponse.json(
       { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    )
+        success: false,
+        error: "Failed to create user account" 
+      }, 
+      { status: 500 }
+    );
   }
 }

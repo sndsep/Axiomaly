@@ -1,4 +1,5 @@
 // src/components/onboarding/constants.ts
+
 export const VFX_SPECIALIZATIONS = [
   { id: '3d-modeling', label: '3D Modeling' },
   { id: 'animation', label: 'Character Animation' },
@@ -51,3 +52,22 @@ export const LEARNING_STYLES = [
   { id: 'self-paced', label: 'Self-Paced Study' },
   { id: 'mentored', label: 'Mentored Learning' }
 ] as const;
+
+export const CAREER_PATH_OPTIONS = {
+  SHORT_COURSE: {
+    title: 'Short Course',
+    description: 'Master specific skills fast',
+    icon: 'Rocket',
+    duration: '1-3 months per course',
+    focus: 'Specific VFX skills',
+    outcome: 'Course certificates',
+  },
+  DEGREE_PROGRAM: {
+    title: 'Degree Program',
+    description: 'Become a complete VFX artist',
+    icon: 'GraduationCap',
+    duration: '12-24 months program',
+    focus: 'Complete VFX education',
+    outcome: 'Professional degree',
+  },
+} as const;

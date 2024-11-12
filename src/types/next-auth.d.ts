@@ -1,30 +1,25 @@
 // src/types/next-auth.d.ts
-import { DefaultSession } from "next-auth";
+import { DefaultSession, DefaultUser } from "next-auth"
+import { JWT, DefaultJWT } from "next-auth/jwt"
 
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string;
-      careerPath?: 'SHORT_COURSE' | 'DEGREE_PROGRAM';
-      onboardingStep?: number;
-      hasCompletedOnboarding?: boolean;
+      id: string
+      careerPath: string | null
+      hasCompletedOnboarding: boolean
     } & DefaultSession["user"]
   }
 
-  interface User {
-    careerPath?: 'SHORT_COURSE' | 'DEGREE_PROGRAM';
-    onboardingStep?: number;
-    hasCompletedOnboarding?: boolean;
+  interface User extends DefaultUser {
+    careerPath: string | null
+    hasCompletedOnboarding: boolean
   }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
-    user: {
-      id: string;
-      careerPath?: 'SHORT_COURSE' | 'DEGREE_PROGRAM';
-      onboardingStep?: number;
-      hasCompletedOnboarding?: boolean;
-    } & DefaultSession["user"]
+  interface JWT extends DefaultJWT {
+    careerPath: string | null
+    hasCompletedOnboarding: boolean
   }
 }
