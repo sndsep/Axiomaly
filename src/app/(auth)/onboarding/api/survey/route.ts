@@ -6,10 +6,8 @@ import { prisma } from "@/lib/db"
 import { z } from "zod"
 
 const shortCourseSurveySchema = z.object({
-  skillLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  primaryInterest: z.string(),
-  timeCommitment: z.number().min(1).max(40),
-  learningGoals: z.array(z.string())
+  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  interests: z.array(z.string()).min(1, 'Please select at least one interest'),
 })
 
 const comprehensiveSurveySchema = z.object({
@@ -19,7 +17,7 @@ const comprehensiveSurveySchema = z.object({
   timeCommitment: z.number(),
   preferredLearningStyle: z.array(z.string()),
   priorEducation: z.string().optional(),
-  portfolioUrl: z.string().url().optional()
+  portfolioUrl: z.string().url().optional(),
 })
 
 export async function POST(request: Request) {
@@ -31,10 +29,10 @@ export async function POST(request: Request) {
 
     const data = await request.json()
 
-    // Get user's career path
+    // Determine the user's career path
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { careerPath: true }
+      select: { careerPath: true },
     })
 
     // Validate data based on career path
@@ -43,48 +41,24 @@ export async function POST(request: Request) {
       : comprehensiveSurveySchema.parse(data)
 
     // Save survey responses
-    const progress = await prisma.onboardingProgress.upsert({
+    await prisma.onboardingProgress.upsert({
       where: {
         userId: session.user.id,
       },
       create: {
         userId: session.user.id,
         currentStep: 2,
-        responses: validatedData
+        responses: validatedData,
       },
       update: {
         currentStep: 2,
-        responses: validatedData
-      }
+        responses: validatedData,
+      },
     })
 
-    // Also save learning preferences
-    await prisma.userPreferences.upsert({
-      where: {
-        userId: session.user.id,
-      },
-      create: {
-        userId: session.user.id,
-        weeklyGoal: data.timeCommitment,
-        preferredTags: user?.careerPath === 'SHORT_COURSE' 
-          ? [data.primaryInterest]
-          : data.specialization,
-      },
-      update: {
-        weeklyGoal: data.timeCommitment,
-        preferredTags: user?.careerPath === 'SHORT_COURSE'
-          ? [data.primaryInterest]
-          : data.specialization,
-      }
-    })
-
-    return NextResponse.json(progress)
+    return NextResponse.json({ success: true })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return new NextResponse(JSON.stringify(error.issues), { status: 400 })
-    }
-    
-    console.error('[ONBOARDING_SURVEY]', error)
-    return new NextResponse("Internal Error", { status: 500 })
+    console.error('Error processing survey:', error)
+    return new NextResponse("Internal Server Error", { status: 500 })
   }
 }

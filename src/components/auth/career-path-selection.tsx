@@ -65,7 +65,7 @@ export function CareerPathSelection() {
 
   const handlePathSelection = async (path: 'SHORT_COURSE' | 'DEGREE_PROGRAM') => {
     try {
-        setIsLoading(path);
+        setIsLoading(path as CareerPath);
         const response = await fetch('/api/user/career-path', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

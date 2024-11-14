@@ -201,11 +201,8 @@ model OnboardingProgress {
   acceptedCurriculum    Boolean      @default(false) // For DEGREE_PROGRAM path
   selectedSpecializations String[]    @default([])   // For DEGREE_PROGRAM path
   createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  
+  updatedAt            DateTime      @default(now()) @updatedAt
   user                 User          @relation(fields: [userId], references: [id])
-
-  @@index([userId])
 }
 
 model Deadline {

@@ -1,6 +1,4 @@
 {
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/user/career-path/route": "app/api/user/career-path/route.js",
   "/(auth)/onboarding/short-course/survey/page": "app/(auth)/onboarding/short-course/survey/page.js",
   "/(auth)/onboarding/degree-program/survey/page": "app/(auth)/onboarding/degree-program/survey/page.js",
   "/(auth)/onboarding/career-path/page": "app/(auth)/onboarding/career-path/page.js"

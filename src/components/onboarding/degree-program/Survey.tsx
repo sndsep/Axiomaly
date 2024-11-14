@@ -1,5 +1,5 @@
-// src/components/onboarding/degree-program/Survey.tsx
 'use client';
+// src/components/onboarding/degree-program/Survey.tsx
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,16 +11,13 @@ import { Form } from '@/components/ui/forms/form';
 import { useToast } from '@/components/ui/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { OnboardingLayout } from '../common/OnboardingLayout';
-import { SurveyQuestion } from '../common/SurveyQuestion';
-import { 
-  VFX_SPECIALIZATIONS, 
-  LEARNING_GOALS, 
-  LEARNING_STYLES,
-  TIME_COMMITMENT_OPTIONS,
-  SKILL_LEVELS 
-} from '../constants';
+import { OnboardingProgress } from '../common/OnboardingProgress';
+import { ProgressBar } from '../common/ProgressBar';
+import { OnboardingStep } from '@prisma/client';
 import type { ComprehensiveSurveyData } from '../types';
 import React from 'react';
+import { getServerSession } from "next-auth/next"; // Import for session handling
+import { authOptions } from '@/lib/auth';
 
 const surveySchema = z.object({
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
@@ -32,10 +29,20 @@ const surveySchema = z.object({
   portfolioUrl: z.string().url().optional().or(z.literal('')),
 });
 
+const steps = [
+  { id: OnboardingStep.EXPERIENCE, title: 'Experience Level', description: 'Select your experience level' },
+  { id: OnboardingStep.GOALS, title: 'Career Goals', description: 'Select your career goals' },
+  { id: OnboardingStep.SCHEDULE, title: 'Time Commitment', description: 'Select your time commitment' },
+  { id: OnboardingStep.BACKGROUND, title: 'Prior Education', description: 'Provide your prior education' },
+  { id: OnboardingStep.PORTFOLIO, title: 'Portfolio URL', description: 'Provide your portfolio URL' },
+];
+
 export default function ComprehensiveSurvey() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(OnboardingStep.EXPERIENCE);
+  const completedSteps = [OnboardingStep.EXPERIENCE];
 
   const form = useForm<ComprehensiveSurveyData>({
     resolver: zodResolver(surveySchema),
@@ -51,8 +58,12 @@ export default function ComprehensiveSurvey() {
   });
 
   const onSubmit = async (data: ComprehensiveSurveyData) => {
+    console.log('Form Data:', data); // Log form data for debugging
     setIsSubmitting(true);
     try {
+      const session = await getServerSession(authOptions); // Get session to access user ID
+      const userId = session?.user?.id; // Ensure you have the user ID
+
       const response = await fetch('/api/onboarding/survey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,6 +72,21 @@ export default function ComprehensiveSurvey() {
 
       if (!response.ok) {
         throw new Error('Failed to save survey responses');
+      }
+
+      // Update OnboardingProgress with responses
+      const progressResponse = await fetch('/api/onboarding/progress', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId,
+          responses: data,
+          currentStep: OnboardingStep.GOALS, // Move to the next step
+        }),
+      });
+
+      if (!progressResponse.ok) {
+        throw new Error('Failed to update onboarding progress');
       }
 
       toast({
@@ -85,6 +111,8 @@ export default function ComprehensiveSurvey() {
     <OnboardingLayout>
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
+          <OnboardingProgress steps={steps} currentStep={currentStep} completedSteps={completedSteps} />
+          <ProgressBar />
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Comprehensive Survey
@@ -93,118 +121,18 @@ export default function ComprehensiveSurvey() {
               Help us create your personalized VFX education journey
             </p>
           </div>
-
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Experience Level */}
-              <SurveyQuestion
-                type="single"
-                id="experienceLevel"
-                label="What's your current experience level with VFX?"
-                description="This helps us adjust the curriculum difficulty"
-                options={SKILL_LEVELS.map(level => ({
-                  id: level.value,
-                  label: level.label,
-                  description: level.description,
-                }))}
-                form={form}
-                required
-                layout="horizontal"
-              />
-
-              {/* Specializations */}
-              <SurveyQuestion
-                type="multiple"
-                id="specializations"
-                label="Which areas would you like to specialize in?"
-                description="Select all areas that interest you - you can refine these later"
-                options={VFX_SPECIALIZATIONS.map(spec => ({
-                  id: spec.id,
-                  label: spec.label,
-                }))}
-                form={form}
-                required
-              />
-
-              {/* Career Goals */}
-              <SurveyQuestion
-                type="multiple"
-                id="careerGoals"
-                label="What are your career goals?"
-                description="Where do you see yourself in the VFX industry?"
-                options={LEARNING_GOALS.map(goal => ({
-                  id: goal.id,
-                  label: goal.label,
-                }))}
-                form={form}
-                required
-              />
-
-              {/* Time Commitment */}
-              <SurveyQuestion
-                type="scale"
-                id="timeCommitment"
-                label="How many hours per week can you dedicate to your studies?"
-                description="We recommend at least 20 hours per week for optimal progress"
-                min={10}
-                max={40}
-                step={5}
-                markers={TIME_COMMITMENT_OPTIONS.map(option => ({
-                  value: option.value,
-                  label: option.label,
-                }))}
-                form={form}
-                required
-              />
-
-              {/* Learning Style */}
-              <SurveyQuestion
-                type="multiple"
-                id="preferredLearningStyle"
-                label="How do you learn best?"
-                description="Select all that apply - we'll tailor your learning experience"
-                options={LEARNING_STYLES.map(style => ({
-                  id: style.id,
-                  label: style.label,
-                }))}
-                form={form}
-                required
-              />
-
-              {/* Prior Education */}
-              <SurveyQuestion
-                type="text"
-                id="priorEducation"
-                label="Prior Education or Training"
-                description="Tell us about any relevant education or training you have (optional)"
-                multiline
-                placeholder="e.g., Bachelor's in Animation, Self-taught 3D modeling..."
-                form={form}
-              />
-
-              {/* Portfolio URL */}
-              <SurveyQuestion
-                type="text"
-                id="portfolioUrl"
-                label="Portfolio URL"
-                description="Share your existing work if you have any (optional)"
-                placeholder="https://your-portfolio.com"
-                form={form}
-              />
-
-              <Button
-                type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Continue to Curriculum Plan'
-                )}
+              <div>
+                <label>Experience Level</label>
+                <select {...form.register("experienceLevel")}>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="animate-spin" /> : "Submit"}
               </Button>
             </form>
           </Form>

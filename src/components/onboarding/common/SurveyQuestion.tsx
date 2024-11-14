@@ -1,5 +1,9 @@
+'use client';
 // src/components/onboarding/common/SurveyQuestion.tsx
+
+
 import { FC } from 'react';
+import { useForm, UseFormReturn } from 'react-hook-form';
 import {
   FormControl,
   FormField,
@@ -12,8 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/forms/radio-group';
 import { Checkbox } from '@/components/ui/forms/checkbox';
 import { Input } from '@/components/ui/forms/input';
 import { Textarea } from '@/components/ui/forms/textarea';
-import Slider from '@/components/ui/forms/slider'; // Ensure this is correct
-import { UseFormReturn } from 'react-hook-form';
+import Slider from '@/components/ui/forms/slider'; // Ensure this path is correct
 import { cn } from '@/lib/utils';
 
 interface Option {
@@ -74,17 +77,20 @@ export const SurveyQuestion: FC<SurveyQuestionProps> = (props) => {
           <FormField
             control={form.control}
             name={id}
-            render={({ field }) => (
+            render={({ field }: { field: any }) => (
               <FormItem className={className}>
                 <FormLabel>{label}{required && ' *'}</FormLabel>
                 {description && <FormDescription>{description}</FormDescription>}
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className={cn(
-                      'grid gap-4',
-                      props.layout === 'horizontal' ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1'
+                    // Start of Selection
+                    <FormControl>
+                      <RadioGroup
+                        onChange={field.onChange}
+                        value={field.value}
+                        className={cn(
+                          'grid gap-4',
+                          props.layout === 'horizontal' ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1'
+                        )}
+                      >
                     )}
                   >
                     {props.options.map((option) => (
@@ -120,7 +126,7 @@ export const SurveyQuestion: FC<SurveyQuestionProps> = (props) => {
           <FormField
             control={form.control}
             name={id}
-            render={({ field }) => (
+            render={({ field }: { field: any }) => (
               <FormItem className={className}>
                 <FormLabel>{label}{required && ' *'}</FormLabel>
                 {description && <FormDescription>{description}</FormDescription>}
@@ -129,20 +135,21 @@ export const SurveyQuestion: FC<SurveyQuestionProps> = (props) => {
                     <FormField
                       key={option.id}
                       control={form.control}
-                      name={id}
-                      render={({ field }) => (
-                        <FormItem
-                          key={option.id}
-                          className="flex items-start space-x-3 space-y-0"
-                        >
+                      name={`${id}.${option.id}`}
+                      render={({ field }: { field: any }) => (
+                        <FormItem className="flex items-start space-x-3 space-y-0">
                           <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(option.id)}
-                              onCheckedChange={(checked) => {
-                                const value = checked
-                                  ? [...(field.value || []), option.id]
-                                  : field.value?.filter((value: string) => value !== option.id);
-                                field.onChange(value);
+                                // Start of Selection
+                                <Checkbox
+                                  checked={field.value?.includes(option.id)}
+                                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                    const checked = event.target.checked;
+                                    const value = checked
+                                      ? [...(field.value || []), option.id]
+                                      : field.value?.filter((value: string) => value !== option.id);
+                                    field.onChange(value);
+                                  }}
+                                />
                               }}
                             />
                           </FormControl>
@@ -181,7 +188,9 @@ export const SurveyQuestion: FC<SurveyQuestionProps> = (props) => {
                       max={props.max}
                       step={props.step}
                       value={[field.value]}
-                      onValueChange={([value]) => field.onChange(value)}
+                      onValueChange={([value]) => {
+                        field.onChange(value);
+                      }}
                     />
                     {props.markers && (
                       <div className="flex justify-between text-sm text-gray-500">
