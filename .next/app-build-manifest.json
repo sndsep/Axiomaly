@@ -1,9 +1,24 @@
 {
   "pages": {
-    "/page": [
+    "/(auth)/onboarding/career-path/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/(auth)/onboarding/career-path/page.js"
+    ],
+    "/(auth)/onboarding/career-path/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/career-path/layout.js"
+    ],
+    "/(auth)/onboarding/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/layout.js"
+    ],
+    "/(auth)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -26,35 +41,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/(auth)/login/page": [
+    "/(auth)/onboarding/short-course/survey/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/login/page.js"
+      "static/chunks/app/(auth)/onboarding/short-course/survey/page.js"
     ],
-    "/(auth)/layout": [
+    "/(auth)/onboarding/degree-program/survey/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/layout.js"
-    ],
-    "/(authenticated)/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/dashboard/page.js"
-    ],
-    "/(authenticated)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/layout.js"
-    ],
-    "/(authenticated)/dashboard/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/dashboard/courses/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(auth)/onboarding/degree-program/survey/page.js"
     ]
   }
 }

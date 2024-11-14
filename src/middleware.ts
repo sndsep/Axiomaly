@@ -4,13 +4,29 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
+  async function middleware(req) {
     const token = req.nextauth.token;
+    const { pathname } = req.nextUrl;
 
-    // Allow all API routes to pass through
+    // Always allow API routes
     if (pathname.startsWith('/api/')) {
       return NextResponse.next();
+    }
+
+    // Check if user is authenticated but hasn't completed onboarding
+    if (token && 
+        !token.hasCompletedOnboarding && 
+        !pathname.startsWith('/onboarding') && 
+        pathname !== '/login' && 
+        pathname !== '/register') {
+      return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
+    }
+
+    // If user has completed onboarding, don't allow access to onboarding pages
+    if (token && 
+        token.hasCompletedOnboarding && 
+        pathname.startsWith('/onboarding')) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
     // If authenticated users try to access auth pages, redirect to dashboard

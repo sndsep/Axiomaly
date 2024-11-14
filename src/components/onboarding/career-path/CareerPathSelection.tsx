@@ -14,6 +14,7 @@ export function CareerPathSelection() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
   const handlePathSelection = async (path: 'SHORT_COURSE' | 'DEGREE_PROGRAM') => {
+    console.log(`Selected path: ${path}`);
     try {
       setIsLoading(path);
       const response = await fetch('/api/user/career-path', {
@@ -23,7 +24,8 @@ export function CareerPathSelection() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save career path');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save career path');
       }
 
       toast({
@@ -31,7 +33,6 @@ export function CareerPathSelection() {
         description: "Your career path has been saved. Redirecting...",
       });
 
-      // Redirect based on the selected path
       const nextRoute = path === 'SHORT_COURSE' 
         ? '/onboarding/short-course/survey'
         : '/onboarding/degree-program/survey';
@@ -42,7 +43,7 @@ export function CareerPathSelection() {
       console.error('Error:', error);
       toast({
         title: "Error",
-        description: "Failed to save your selection. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save your selection. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -74,20 +75,6 @@ export function CareerPathSelection() {
                 <p className="text-gray-600 mb-4">
                   Perfect for learning specific VFX skills quickly
                 </p>
-                <ul className="text-left space-y-2 mb-6">
-                  <li className="flex items-center">
-                    <span className="mr-2">✓</span>
-                    1-3 months per course
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">✓</span>
-                    Focus on specific skills
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">✓</span>
-                    Flexible learning schedule
-                  </li>
-                </ul>
                 <Button 
                   onClick={() => handlePathSelection('SHORT_COURSE')}
                   disabled={isLoading !== null}
@@ -117,20 +104,6 @@ export function CareerPathSelection() {
                 <p className="text-gray-600 mb-4">
                   Comprehensive education to become a VFX professional
                 </p>
-                <ul className="text-left space-y-2 mb-6">
-                  <li className="flex items-center">
-                    <span className="mr-2">✓</span>
-                    12-24 month full program
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">✓</span>
-                    Complete VFX curriculum
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">✓</span>
-                    Professional certification
-                  </li>
-                </ul>
                 <Button 
                   onClick={() => handlePathSelection('DEGREE_PROGRAM')}
                   disabled={isLoading !== null}

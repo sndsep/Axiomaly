@@ -4,10 +4,10 @@ import { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { compare } from "bcryptjs";
 
-// Extend next-auth types
 declare module "next-auth" {
-  interface Session extends DefaultSession {
+  interface Session {
     user: {
       id: string;
       role: string;
@@ -24,67 +24,53 @@ declare module "next-auth" {
   }
 }
 
-// Test users for development
-const testUsers = [
-  {
-    id: "1",
-    name: "Test Student",
-    email: "student@test.com",
-    role: "STUDENT",
-    careerPath: "SHORT_COURSE",
-    hasCompletedOnboarding: false
-  },
-  {
-    id: "2",
-    name: "Test Admin",
-    email: "admin@test.com",
-    role: "ADMIN",
-    careerPath: null,
-    hasCompletedOnboarding: true
-  },
-  {
-    id: "3",
-    name: "Test Instructor",
-    email: "instructor@test.com",
-    role: "INSTRUCTOR",
-    careerPath: null,
-    hasCompletedOnboarding: true
-  }
-];
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-      name: "Development Credentials",
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
         try {
-          console.log("Auth attempt for:", credentials?.email);
-
-          if (!credentials?.email) {
-            console.log("No email provided");
+          if (!credentials?.email || !credentials?.password) {
+            console.log("Missing credentials");
             return null;
           }
 
-          // In development mode, use test users
-          if (process.env.NODE_ENV === "development") {
-            const testUser = testUsers.find(user => user.email === credentials.email);
-            console.log("Development mode - Test user found:", !!testUser);
-            return testUser || null;
-          }
-
-          // In production, use database
+          console.log("Looking up user:", credentials.email);
+          
           const user = await prisma.user.findUnique({
             where: { email: credentials.email }
           });
 
           console.log("User found:", !!user);
-          return user;
 
+          if (!user || !user.hashedPassword) {
+            return null;
+          }
+
+          const isPasswordValid = await compare(
+            credentials.password,
+            user.hashedPassword
+          );
+
+          console.log("Password valid:", isPasswordValid);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            careerPath: user.careerPath,
+            hasCompletedOnboarding: user.hasCompletedOnboarding
+          };
         } catch (error) {
           console.error("Auth error:", error);
           return null;
@@ -94,17 +80,17 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/login",
-    error: "/login"
+    error: "/login",
   },
-  debug: process.env.NODE_ENV === "development",
   session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60 // 30 days
+    strategy: "jwt"
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
         token.role = user.role;
         token.careerPath = user.careerPath;
         token.hasCompletedOnboarding = user.hasCompletedOnboarding;
@@ -121,5 +107,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     }
   },
+  debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET
 };

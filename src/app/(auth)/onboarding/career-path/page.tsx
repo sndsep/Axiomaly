@@ -14,6 +14,7 @@ export default function CareerPathPage() {
   const [isLoading, setIsLoading] = React.useState<string | null>(null);
 
   async function handlePathSelection(type: 'SHORT_COURSE' | 'DEGREE_PROGRAM') {
+    console.log(`Selected path: ${type}`);
     try {
       setIsLoading(type);
       const response = await fetch('/api/user/career-path', {
@@ -23,23 +24,26 @@ export default function CareerPathPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save career path');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save career path');
       }
 
       toast({
-        title: "Career path selected",
-        description: "Redirecting to the next step...",
+        title: "Success!",
+        description: "Your career path has been saved. Redirecting...",
       });
 
-      // Redirect based on selection
-      router.push(type === 'SHORT_COURSE' 
+      const nextRoute = type === 'SHORT_COURSE' 
         ? '/onboarding/short-course/survey'
-        : '/onboarding/degree-program/survey'
-      );
+        : '/onboarding/degree-program/survey';
+        
+      router.push(nextRoute);
+      
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Error",
-        description: "Failed to save your selection. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save your selection. Please try again.",
         variant: "destructive",
       });
     } finally {

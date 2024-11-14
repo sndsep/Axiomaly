@@ -1,12 +1,10 @@
-//src/components/auth/register-form.tsx
-
-
-
+// src/components/auth/register-form.tsx
 
 'use client'
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
@@ -24,7 +22,6 @@ import { useToast } from '@/components/ui/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
-// Form Schema
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email'),
@@ -38,7 +35,6 @@ export function RegisterForm() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = React.useState(false)
 
-  // Initialize form
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,30 +47,43 @@ export function RegisterForm() {
   async function onSubmit(data: FormData) {
     try {
       setIsLoading(true)
-      console.log('Submitting form with data:', { ...data, password: '[REDACTED]' })
 
-      const response = await fetch('/api/auth/register', {
+      // First register the user
+      const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
+      if (!registerResponse.ok) {
+        const error = await registerResponse.json()
+        throw new Error(error.error || 'Registration failed')
       }
 
-      // Show success message
-      toast({
-        title: 'Success!',
-        description: 'Your account has been created. Please sign in.',
+      // Then sign in
+      const signInResult = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
       })
 
-      // Redirect to login
-      router.push('/login')
+      console.log("Sign in result:", signInResult)
+
+      if (signInResult?.error) {
+        throw new Error('Failed to sign in after registration')
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Account created successfully!'
+      })
+
+      // Wait a moment before redirecting
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      router.push('/onboarding/career-path')
+      router.refresh()
+
     } catch (error) {
       console.error('Registration error:', error)
       toast({

@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/forms/radio-group';
 import { Checkbox } from '@/components/ui/forms/checkbox';
 import { Input } from '@/components/ui/forms/input';
 import { Textarea } from '@/components/ui/forms/textarea';
-import { Slider } from '@/components/ui/forms/slider';
+import Slider from '@/components/ui/forms/slider'; // Ensure this is correct
 import { UseFormReturn } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 
