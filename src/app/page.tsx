@@ -1,25 +1,8 @@
 // src/app/page.tsx
 import React from 'react';
-import { 
-  Search,
-  Check,
-  Award, 
-  Users, 
-  Clock, 
-  Monitor,
-  Rocket,
-  GraduationCap,
-  Target,
-  Trophy,
-  BookOpen
-} from 'lucide-react';
+import { Metadata } from 'next';
 
-import { Button, buttonVariants } from '@/components/ui/forms/button';
-import { Input } from '@/components/ui/forms/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/forms/card';
-import { Badge } from '@/components/ui/forms/badge';
-
-// import components
+// Import components
 import { Header } from '@/components/landing/Header';
 import { Hero } from '@/components/landing/Hero';
 import { CourseSearch } from '@/components/landing/CourseSearch';
@@ -29,6 +12,11 @@ import { PricingSection } from '@/components/landing/PricingSection';
 import { WhyChooseUs } from '@/components/landing/WhyChooseUs';
 import { StudentProjects } from '@/components/landing/StudentProjects';
 import { Footer } from '@/components/landing/Footer';
+
+export const metadata: Metadata = {
+  title: 'VFX Academy - Master Visual Effects',
+  description: 'Learn VFX from industry experts through short courses and comprehensive degree programs.',
+}
 
 /**
  * Landing Page Component

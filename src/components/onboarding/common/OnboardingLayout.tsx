@@ -1,21 +1,16 @@
 // src/components/onboarding/common/OnboardingLayout.tsx
-"use client";
-
-import React from 'react';
-import { Card } from '@/components/ui/forms/card';
+import React from 'react'
 
 interface OnboardingLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export function OnboardingLayout({ children }: OnboardingLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-2xl p-6">
+    <div className="min-h-screen bg-gray-50">
+      <main className="container mx-auto px-4 py-8">
         {children}
-      </Card>
+      </main>
     </div>
-  );
+  )
 }
-
-export default OnboardingLayout;

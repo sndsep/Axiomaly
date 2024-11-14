@@ -5,7 +5,7 @@ import type { Course } from '@/types/course'
 import type { CourseProgress } from '@/types/progress'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/forms/card"
 import { Button } from "@/components/ui/forms/button"
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "@/components/ui/forms/progress"
 import { Clock, Award, PlayCircle, BookOpen } from "lucide-react"
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'

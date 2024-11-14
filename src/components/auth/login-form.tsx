@@ -1,5 +1,4 @@
 // src/components/auth/login-form.tsx
-// This component is used to handle the login form.
 
 'use client'
 
@@ -29,23 +28,32 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
       const email = formData.get('email') as string
       const password = formData.get('password') as string
 
+      console.log('Attempting login with:', email) // For development debugging
+
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
+        callbackUrl: '/dashboard'
       })
 
       if (result?.error) {
+        console.error('Login error:', result.error) // For development debugging
         toast({
           title: "Error",
           description: "Invalid credentials",
           variant: "destructive",
         })
       } else {
-        router.push('/dashboard')
+        toast({
+          title: "Success",
+          description: "Login successful!",
+        })
+        router.push(result?.url || '/dashboard')
         router.refresh()
       }
     } catch (error) {
+      console.error('Login error:', error) // For development debugging
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -61,26 +69,26 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
       <form onSubmit={onSubmit}>
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label className="sr-only" htmlFor="email">
+            <Label htmlFor="email">
               Email
             </Label>
             <Input
               id="email"
               name="email"
-              placeholder="name@example.com"
+              placeholder="student@test.com"
               type="email"
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
               disabled={isLoading}
             />
-            <Label className="sr-only" htmlFor="password">
+            <Label htmlFor="password">
               Password
             </Label>
             <Input
               id="password"
               name="password"
-              placeholder="Password"
+              placeholder="Enter any password in dev mode"
               type="password"
               autoCapitalize="none"
               autoComplete="current-password"
@@ -92,37 +100,14 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Sign In
+            Sign In with Email
           </Button>
         </div>
       </form>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Button variant="secondary" onClick={() => signIn("google")} disabled={isLoading}>
-          {isLoading ? (
-            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.google className="mr-2 h-4 w-4" />
-          )}
-          Google
-        </Button>
-        <Button variant="secondary" onClick={() => signIn("github")} disabled={isLoading}>
-          {isLoading ? (
-            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.gitHub className="mr-2 h-4 w-4" />
-          )}
-          GitHub
-        </Button>
+      <div className="text-sm text-center text-muted-foreground">
+        For development, use:<br />
+        Email: student@test.com<br />
+        Password: (any password)
       </div>
     </div>
   )

@@ -76,20 +76,8 @@ export async function POST(req: Request) {
       careerPath: user.careerPath
     });
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        hasCompletedOnboarding: user.hasCompletedOnboarding
-      }
-    }, { 
-      status: 201,
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    // Redirect to onboarding after successful registration
+    return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
 
   } catch (error) {
     console.error("Registration error:", error);

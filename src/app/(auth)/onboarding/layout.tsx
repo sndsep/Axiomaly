@@ -1,28 +1,9 @@
-// src/app/(auth)/onboarding/layout.tsx
-import { getServerSession } from "next-auth/next"
-import { redirect } from "next/navigation"
-import { authOptions } from "@/lib/auth"
-import { Toaster } from "@/components/ui/forms/toaster"
-import { ProgressBar } from "@/components/onboarding/ProgressBar"
+import React from 'react'
 
-export default async function OnboardingLayout({
-  children,
-}: {
+interface OnboardingLayoutProps {
   children: React.ReactNode
-}) {
-  const session = await getServerSession(authOptions)
+}
 
-  if (!session?.user) {
-    redirect('/login')
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="container mx-auto px-4">
-        <ProgressBar />
-        {children}
-      </main>
-      <Toaster />
-    </div>
-  )
+export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
+  return <div className="min-h-screen bg-gray-50">{children}</div>
 }
