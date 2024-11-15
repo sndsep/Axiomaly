@@ -1,37 +1,55 @@
 // src/app/api/user/career-path/route.ts
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { CareerPath, OnboardingStep } from '@prisma/client';
+import { CareerPathSelection } from '@/types/onboarding';
 
-import { getServerSession } from "next-auth/next";
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { authOptions } from "@/lib/auth";
-import { z } from "zod";
-
-const careerPathSchema = z.object({
-  careerPath: z.enum(["SHORT_COURSE", "DEGREE_PROGRAM"]),
-});
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+    
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { careerPath } = careerPathSchema.parse(body);
+    const data: CareerPathSelection = await request.json();
+
+    console.log('Updating user with data:', data);
 
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
-      data: { careerPath },
+      data: {
+        careerPath: data.type as CareerPath,
+        onboardingProgress: {
+          upsert: {
+            where: { userId: session.user.id },
+            create: {
+              currentStep: 'INTERESTS' as OnboardingStep,
+              completed: false,
+              responses: {}
+            },
+            update: {
+              currentStep: 'INTERESTS' as OnboardingStep,
+              responses: {}
+            }
+          }
+        }
+      },
+      include: {
+        onboardingProgress: true
+      }
     });
 
-    return NextResponse.json({
-      success: true,
-      user: updatedUser,
-      nextStep: careerPath === "SHORT_COURSE" ? "/onboarding/short-course/survey" : "/onboarding/degree-program/survey",
-    });
+    console.log('User updated:', updatedUser);
+    return NextResponse.json(updatedUser);
+    
   } catch (error) {
-    console.error("Career path selection error:", error);
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+    console.error('Career path selection error:', error);
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : 'Failed to save career path' }, 
+      { status: 500 }
+    );
   }
 }

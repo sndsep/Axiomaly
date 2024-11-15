@@ -1,56 +1,56 @@
+// src/components/onboarding/career-path/CareerPathSelection.tsx
 'use client';
 
-// src/components/onboarding/career-path/CareerPathSelection.tsx
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/forms/card";
 import { Button } from "@/components/ui/forms/button";
 import { Rocket, GraduationCap, Loader2 } from "lucide-react";
 import { useState } from 'react';
 import { useToast } from "@/components/ui/hooks/use-toast";
+import { CareerPath, CareerPathSelection as CareerPathSelectionType } from '@/types/onboarding';
 
 export function CareerPathSelection() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<CareerPath | null>(null);
 
-  const handlePathSelection = async (path: 'SHORT_COURSE' | 'DEGREE_PROGRAM') => {
-    console.log(`Selected path: ${path}`);
+  const handlePathSelection = async (type: CareerPath) => {
     try {
-      setIsLoading(path);
+      setIsLoading(type);
+      const payload: CareerPathSelectionType = { type };
+
       const response = await fetch('/api/user/career-path', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ careerPath: path }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save career path');
+        console.error('Career Path API Error:', errorData);
+        throw new Error(errorData.message || 'Failed to save career path');
       }
 
-      toast({
-        title: "Success!",
-        description: "Your career path has been saved. Redirecting...",
-      });
+      const data = await response.json();
+      const pathSegment = type === CareerPath.SHORT_COURSE ? 'short-course' : 'degree-program';
+      console.log('Redirecting to:', `/onboarding/${pathSegment}/survey`);
+      router.push(`/onboarding/${pathSegment}/survey`);
 
-      const nextRoute = path === 'SHORT_COURSE' 
-        ? '/onboarding/short-course/survey'
-        : '/onboarding/degree-program/survey';
-        
-      router.push(nextRoute);
-      
+      console.log('Career Path Selected:', type);
+      console.log('API Response:', data);
+
     } catch (error) {
       console.error('Error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save your selection. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save your selection.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(null);
     }
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -76,11 +76,11 @@ export function CareerPathSelection() {
                   Perfect for learning specific VFX skills quickly
                 </p>
                 <Button 
-                  onClick={() => handlePathSelection('SHORT_COURSE')}
+                  onClick={() => handlePathSelection(CareerPath.SHORT_COURSE)}
                   disabled={isLoading !== null}
                   className="w-full"
                 >
-                  {isLoading === 'SHORT_COURSE' ? (
+                  {isLoading === CareerPath.SHORT_COURSE ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Selecting...
@@ -105,11 +105,11 @@ export function CareerPathSelection() {
                   Comprehensive education to become a VFX professional
                 </p>
                 <Button 
-                  onClick={() => handlePathSelection('DEGREE_PROGRAM')}
+                  onClick={() => handlePathSelection(CareerPath.DEGREE_PROGRAM)}
                   disabled={isLoading !== null}
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
-                  {isLoading === 'DEGREE_PROGRAM' ? (
+                  {isLoading === CareerPath.DEGREE_PROGRAM ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Selecting...

@@ -8,6 +8,27 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model SurveyResponse {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  
+  experienceLevel String
+  interests       String[]  @default([])
+  weeklyHours     Int
+  goals           String[]  @default([])
+  
+  specializations String[]  @default([])
+  careerGoals     String[]  @default([])
+  timeCommitment  Int?
+  priorEducation  String?
+  portfolioUrl    String?
+  
+  careerPath      CareerPath
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
 enum Role {
   ADMIN
   USER
@@ -83,6 +104,7 @@ model User {
   preferences        UserPreferences?
   onboardingProgress OnboardingProgress?
   deadlines          Deadline[]
+  surveyResponse     SurveyResponse?
 }
 
 model Course {

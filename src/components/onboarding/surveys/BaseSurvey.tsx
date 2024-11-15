@@ -1,7 +1,9 @@
 // src/components/onboarding/surveys/BaseSurvey.tsx
+"use client";
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormContext, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/forms/button';
@@ -11,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { OnboardingLayout } from '../common/OnboardingLayout';
 import { OnboardingProgress } from '../common/OnboardingProgress';
 import { ProgressBar } from '../common/ProgressBar';
-import { SurveyQuestion } from '../common/SurveyQuestion';
+import { SurveyQuestion as SurveyQuestionComponent } from '../common/SurveyQuestion';
 
 export const baseSurveySchema = z.object({
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
@@ -29,109 +31,16 @@ export const vfxInterests = [
   { id: 'rigging', label: 'Rigging', description: 'Build character and object control systems' },
 ];
 
-export function BaseSurvey({ 
-  schema = baseSurveySchema,
-  onSubmitEndpoint,
-  nextStep,
-  children 
-}) {
-  const router = useRouter();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      experienceLevel: 'beginner',
-      interests: [],
-      weeklyHours: 10,
-      goals: [],
-    },
-  });
-
-  const onSubmit = async (data) => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(onSubmitEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save survey responses');
-      }
-
-      toast({
-        title: "Survey completed!",
-        description: "Your preferences have been saved successfully.",
-      });
-
-      router.push(nextStep);
-    } catch (error) {
-      console.error('Error saving survey:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save your responses. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+export function BaseSurvey({ children, ...props }) {
   return (
     <OnboardingLayout>
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <ProgressBar progress={50} />
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <SurveyQuestion
-                type="single"
-                id="experienceLevel"
-                label="What's your current level of experience with VFX?"
-                required
-                form={form}
-                options={[
-                  { id: 'beginner', label: 'Beginner', description: 'Little to no experience' },
-                  { id: 'intermediate', label: 'Intermediate', description: 'Some experience' },
-                  { id: 'advanced', label: 'Advanced', description: 'Significant experience' },
-                ]}
-                layout="horizontal"
-              />
-
-              <SurveyQuestion
-                type="multiple"
-                id="interests"
-                label="Which areas of VFX are you most interested in?"
-                description="Select up to 3 areas"
-                required
-                form={form}
-                options={vfxInterests}
-                maxSelect={3}
-              />
-
-              {children}
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Continue'
-                )}
-              </Button>
-            </form>
-          </Form>
-        </div>
+        <FormProvider {...props.form}>
+          <form onSubmit={props.onSubmit} className="space-y-8">
+            {children}
+            <Button type="submit">Continue</Button>
+          </form>
+        </FormProvider>
       </div>
     </OnboardingLayout>
   );
@@ -144,7 +53,7 @@ export function ShortCourseSurvey() {
       onSubmitEndpoint="/api/onboarding/short-course/survey"
       nextStep="/onboarding/short-course/recommendations"
     >
-      <SurveyQuestion
+      <SurveyQuestionComponent
         type="scale"
         id="weeklyHours"
         label="How many hours per week can you dedicate to learning?"
@@ -179,7 +88,7 @@ export function DegreeProgramSurvey() {
       onSubmitEndpoint="/api/onboarding/degree-program/survey"
       nextStep="/onboarding/degree-program/curriculum"
     >
-      <SurveyQuestion
+      <SurveyQuestionComponent
         type="multiple"
         id="careerGoals"
         label="What are your career goals?"
@@ -193,7 +102,7 @@ export function DegreeProgramSurvey() {
         ]}
       />
 
-      <SurveyQuestion
+      <SurveyQuestionComponent
         type="scale"
         id="timeCommitment"
         label="How many hours per week can you commit to the program?"
@@ -209,7 +118,7 @@ export function DegreeProgramSurvey() {
         ]}
       />
 
-      <SurveyQuestion
+      <SurveyQuestionComponent
         type="text"
         id="portfolioUrl"
         label="Portfolio URL"
@@ -219,4 +128,61 @@ export function DegreeProgramSurvey() {
       />
     </BaseSurvey>
   );
+}
+
+export function SurveyQuestion({ id, label, ...props }) {
+  const { register } = useFormContext();
+
+  return (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <input id={id} {...register(id)} {...props} />
+    </div>
+  );
+}
+
+export function Survey() {
+    const extendedSchema = baseSurveySchema.extend({
+        specializations: z.array(z.string()).min(1),
+        careerGoals: z.array(z.string()).min(1),
+        timeCommitment: z.number().min(10).max(40),
+        priorEducation: z.string().optional(),
+        portfolioUrl: z.string().url().optional().or(z.literal('')),
+    });
+
+    const form = useForm({
+        defaultValues: {
+            careerGoals: [],
+            timeCommitment: 10,
+            priorEducation: '',
+            portfolioUrl: '',
+            specializations: [],
+        },
+    });
+
+    const onSubmit = (data) => {
+        // Maneja el envío de datos aquí
+    };
+
+    return (
+        <BaseSurvey
+            schema={extendedSchema}
+            onSubmit={form.handleSubmit(onSubmit)}
+        >
+            <SurveyQuestionComponent
+                type="multiple"
+                id="careerGoals"
+                label="What are your career goals?"
+                required
+                form={form}
+                options={[
+                    { id: 'studio-artist', label: 'Work at a major VFX studio' },
+                    { id: 'freelancer', label: 'Become a freelance artist' },
+                    { id: 'specialist', label: 'Specialize in a specific VFX area' },
+                    { id: 'technical-director', label: 'Become a Technical Director' },
+                ]}
+            />
+            {/* Otros componentes de SurveyQuestion */}
+        </BaseSurvey>
+    );
 }

@@ -2,8 +2,8 @@
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import Survey from "@/components/onboarding/short-course/Survey"; // Ensure this import is correct
+import { prisma } from "@/lib/prisma";
+import { Survey } from "@/components/onboarding/short-course/Survey"; // Use curly braces for named export
 
 export default async function ShortCourseSurveyPage() {
     const session = await getServerSession(authOptions);

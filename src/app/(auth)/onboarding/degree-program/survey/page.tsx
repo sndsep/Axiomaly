@@ -3,8 +3,8 @@
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import Survey from "@/components/onboarding/degree-program/Survey";
+import { prisma } from "@/lib/prisma";
+import { DegreeProgramSurvey } from '@/components/onboarding/degree-program/Survey';
 
 export default async function DegreeProgramSurveyPage() {
   const session = await getServerSession(authOptions);
@@ -22,13 +22,9 @@ export default async function DegreeProgramSurveyPage() {
     }
   });
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  if (user.careerPath !== 'DEGREE_PROGRAM') {
+  if (!user || user.careerPath !== 'DEGREE_PROGRAM') {
     redirect("/onboarding/career-path");
   }
 
-  return <Survey />;
+  return <DegreeProgramSurvey />;
 }

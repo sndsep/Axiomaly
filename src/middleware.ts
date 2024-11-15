@@ -1,64 +1,58 @@
 // src/middleware.ts
-
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequestWithAuth } from "next-auth/middleware";
 
 export default withAuth(
-  async function middleware(req) {
+  async function middleware(req: NextRequestWithAuth) {
+    const path = req.nextUrl.pathname;
     const token = req.nextauth.token;
-    const { pathname } = req.nextUrl;
 
-    // Always allow API routes
-    if (pathname.startsWith('/api/')) {
+    // If user is authenticated and trying to access auth pages, redirect to dashboard
+    if (token && (path.startsWith('/login') || path.startsWith('/register'))) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
+    // Allow users to proceed during onboarding
+    if (path.startsWith('/onboarding/')) {
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
       return NextResponse.next();
     }
 
-    // Check if user is authenticated but hasn't completed onboarding
-    if (token && 
-        !token.hasCompletedOnboarding && 
-        !pathname.startsWith('/onboarding') && 
-        pathname !== '/login' && 
-        pathname !== '/register') {
-      return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
+    // Protect dashboard routes
+    if (path.startsWith('/dashboard/')) {
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+      return NextResponse.next();
     }
 
-    // If user has completed onboarding, don't allow access to onboarding pages
-    if (token && 
-        token.hasCompletedOnboarding && 
-        pathname.startsWith('/onboarding')) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
-    // If authenticated users try to access auth pages, redirect to dashboard
-    if (token && (pathname === '/login' || pathname === '/register')) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
-    // Add security headers
-    const response = NextResponse.next();
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-    return response;
+    return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
+        const path = req.nextUrl.pathname;
         
-        // Public routes that don't require authentication
-        if (pathname === '/' || 
-            pathname === '/login' || 
-            pathname === '/register' ||
-            pathname.startsWith('/api/auth')) {
+        // Public paths that don't require authentication
+        if (
+          path === '/' || 
+          path.startsWith('/login') || 
+          path.startsWith('/register') ||
+          path.startsWith('/public')
+        ) {
           return true;
         }
 
-        // All other routes require authentication
+        // All other paths require authentication
         return !!token;
       },
+    },
+    pages: {
+      signIn: '/login',
+      error: '/error',
     },
   }
 );
@@ -66,11 +60,12 @@ export default withAuth(
 export const config = {
   matcher: [
     /*
-     * Match all routes except:
-     * 1. /api routes that don't require auth
-     * 2. /_next (static files)
-     * 3. /favicon.ico, /images, etc.
+     * Match all request paths except:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -1,119 +1,51 @@
-// src/app/api/onboarding/career-path/route.ts
+// src/app/api/user/career-path/route.ts
 import { NextResponse } from 'next/server';
-import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/db";
-import { authOptions } from "@/lib/auth";
-import { CareerPath, OnboardingStep } from '@/types/onboarding';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { CareerPath } from '@prisma/client';
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    console.log('Received body:', body);
+    const { careerPath } = await req.json();
 
-    const careerPath = body.careerPath as CareerPath;
-    if (!careerPath || !Object.values(CareerPath).includes(careerPath)) {
+    if (!Object.values(CareerPath).includes(careerPath)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid career path' },
+        { message: 'Invalid career path' }, 
         { status: 400 }
       );
     }
 
-    // Update user and create/update onboarding progress
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
-        careerPath,
-        onboardingProgress: {
-          upsert: {
-            create: {
-              currentStep: OnboardingStep.CAREER_PATH,
-              completed: false,
-              responses: {},
-              selectedSpecializations: [],
-            },
-            update: {
-              currentStep: OnboardingStep.CAREER_PATH,
-              responses: {},
-            },
-          },
+    const user = await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id: session.user.id },
+        data: { careerPath }
+      });
+
+      await tx.onboardingProgress.upsert({
+        where: { userId: session.user.id },
+        create: {
+          userId: session.user.id,
+          currentStep: 'CAREER_PATH'
         },
-      },
-      include: {
-        onboardingProgress: true,
-      },
+        update: {
+          currentStep: 'CAREER_PATH'
+        }
+      });
+
+      return updatedUser;
     });
 
-    // Determine next path based on career path
-    const nextPath = careerPath === CareerPath.SHORT_COURSE 
-      ? 'short-course/survey'
-      : 'comprehensive-survey';
-
-    console.log('API Response:', {
-      success: true,
-      data: { user, progress: user.onboardingProgress },
-      nextPath,
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: { user, progress: user.onboardingProgress },
-      nextPath,
-    });
-    
+    return NextResponse.json(user);
   } catch (error) {
-    console.error('Career path selection error:', error);
+    console.error('Career path update error:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        onboardingProgress: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        careerPath: user.careerPath,
-        currentStep: user.onboardingProgress?.currentStep,
-        completed: user.hasCompletedOnboarding,
-      },
-    });
-
-  } catch (error) {
-    console.error('Error fetching career path:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { message: 'Failed to update career path' }, 
       { status: 500 }
     );
   }
