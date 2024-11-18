@@ -1,23 +1,25 @@
-// src/components/providers/root-provider.tsx
-'use client'
+'use client';
 
-import { ThemeProvider } from "@/components/providers/theme-provider"
-import { SessionProvider } from "next-auth/react"
+import { ThemeProvider } from 'next-themes';
+import { SessionProvider } from 'next-auth/react';
+import { Toaster } from '@/components/ui/forms/toaster';
 
-export function RootProvider({
-  children
-}: {
-  children: React.ReactNode
-}) {
+interface ProvidersProps {
+  children: React.ReactNode;
+}
+
+export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
-      <ThemeProvider 
+      <ThemeProvider
         attribute="class"
         defaultTheme="system"
         enableSystem
+        disableTransitionOnChange
       >
         {children}
+        <Toaster />
       </ThemeProvider>
     </SessionProvider>
-  )
+  );
 }

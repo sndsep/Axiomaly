@@ -9,6 +9,7 @@ import RecentActivity from "@/components/dashboard/activity/RecentActivity";
 import Mentorship from "@/components/dashboard/mentorship/Mentorship";
 import DiscussionForums from "@/components/dashboard/forums/DiscussionForums";
 import Resources from "@/components/dashboard/resources/Resources";
+import Calendar from '@/components/dashboard/Calendar'; // Adjust the path as necessary
 
 const DashboardPage = () => {
   return (
@@ -26,6 +27,15 @@ const DashboardPage = () => {
               <Resources />
           </div>
       </div>
+  );
+};
+
+const CalendarPage = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Calendar</h1>
+      <Calendar />
+    </div>
   );
 };
 

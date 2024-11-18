@@ -4,47 +4,25 @@
 // It is also used in the dashboard to recommend courses to students
 // It is also used in the course search page to recommend courses to students
 
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { z } from 'zod';
 
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { CourseRecommendationService } from '@/lib/services/courseRecommendation';
+const requestSchema = z.object({
+  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  interests: z.array(z.string()),
+  weeklyHours: z.number(),
+  timeframe: z.string(),
+  primaryGoal: z.string(),
+});
 
-export async function GET(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401 }
-      );
-    }
-
-    const recommendationService = new CourseRecommendationService();
-    const recommendations = await recommendationService.getRecommendedCourses(
-      session.user.id
-    );
-
-    return NextResponse.json({
-      recommendations
-    });
-  } catch (error) {
-    console.error('Error getting course recommendations:', error);
-    return new NextResponse(
-      JSON.stringify({ 
-        error: 'Failed to generate course recommendations' 
-      }),
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return new NextResponse(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401 }
@@ -52,30 +30,55 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { selectedCourseIds } = body;
+    const validatedData = requestSchema.parse(body);
 
-    if (!Array.isArray(selectedCourseIds)) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Invalid course selection' }),
-        { status: 400 }
-      );
-    }
-
-    const recommendationService = new CourseRecommendationService();
-    await recommendationService.saveRecommendations(
-      session.user.id,
-      selectedCourseIds
-    );
-
-    return NextResponse.json({
-      message: 'Course selections saved successfully'
+    // Mock recommendation logic - in production this would be more sophisticated
+    const recommendedCourses = await prisma.course.findMany({
+      where: {
+        OR: validatedData.interests.map(interest => ({
+          tags: {
+            has: interest
+          }
+        }))
+      },
+      include: {
+        instructor: {
+          select: {
+            name: true,
+            image: true,
+          }
+        }
+      },
+      take: 5,
     });
+
+    // Transform and enhance course data
+    const enhancedCourses = recommendedCourses.map(course => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      instructor: {
+        name: course.instructor.name,
+        avatar: course.instructor.image,
+        title: 'VFX Instructor', // This would come from the database in production
+      },
+      duration: '6 weeks', // This would be dynamic in production
+      level: validatedData.experienceLevel,
+      studentsCount: Math.floor(Math.random() * 1000) + 500, // Mock data
+      rating: 4 + Math.random(), // Mock data
+      matchScore: Math.floor(Math.random() * 30) + 70, // Mock matching algorithm
+      skills: validatedData.interests,
+      thumbnail: `/api/placeholder/192/128`, // Would be real course thumbnail in production
+    }));
+
+    return NextResponse.json({ 
+      courses: enhancedCourses 
+    });
+
   } catch (error) {
-    console.error('Error saving course selections:', error);
+    console.error('Error in course recommendations:', error);
     return new NextResponse(
-      JSON.stringify({ 
-        error: 'Failed to save course selections' 
-      }),
+      JSON.stringify({ error: 'Internal Server Error' }),
       { status: 500 }
     );
   }

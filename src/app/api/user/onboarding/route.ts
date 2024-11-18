@@ -1,41 +1,60 @@
-// src/app/api/user/onboarding/route.ts
-import { NextResponse } from "next/server"
-import prisma from "@/lib/db"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+// src/app/api/user/career-path/route.ts
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+
+const careerPathSchema = z.object({
+  type: z.enum(['SHORT_COURSE', 'DEGREE_PROGRAM'])
+});
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const data = await req.json()
+    const body = await req.json();
+    const { type } = careerPathSchema.parse(body);
 
-    // Update user with onboarding data
-    const updatedUser = await prisma.user.update({
+    const user = await prisma.user.update({
       where: { email: session.user.email },
       data: {
-        hasCompletedOnboarding: true,
-        // Add other onboarding fields here
+        careerPath: type,
+        onboardingProgress: {
+          upsert: {
+            create: {
+              currentStep: 'SURVEY',
+              completed: false,
+              responses: { careerPath: type }
+            },
+            update: {
+              currentStep: 'SURVEY',
+              responses: { careerPath: type }
+            }
+          }
+        }
       },
-    })
+      include: {
+        onboardingProgress: true
+      }
+    });
 
-    return NextResponse.json(
-      { success: true, user: updatedUser },
-      { status: 200 }
-    )
+    return NextResponse.json({
+      careerPath: user.careerPath,
+      onboardingProgress: user.onboardingProgress
+    });
 
   } catch (error) {
-    console.error("Onboarding error:", error)
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    )
+    console.error('Career path selection error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return new NextResponse('Invalid career path type', { status: 400 });
+    }
+
+    return new NextResponse('Internal server error', { status: 500 });
   }
 }

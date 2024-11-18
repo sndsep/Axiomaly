@@ -1,8 +1,6 @@
-"use client"
-
+// src/components/ui/forms/avatar.tsx
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
-
 import { cn } from "@/lib/utils"
 
 const Avatar = React.forwardRef<
@@ -23,10 +21,9 @@ Avatar.displayName = AvatarPrimitive.Root.displayName
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, src, ...props }, ref) => (
+>(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
-    src={src ? `${src}?t=${Date.now()}` : undefined}
     className={cn("aspect-square h-full w-full", className)}
     {...props}
   />

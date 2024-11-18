@@ -8,27 +8,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model SurveyResponse {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
-  
-  experienceLevel String
-  interests       String[]  @default([])
-  weeklyHours     Int
-  goals           String[]  @default([])
-  
-  specializations String[]  @default([])
-  careerGoals     String[]  @default([])
-  timeCommitment  Int?
-  priorEducation  String?
-  portfolioUrl    String?
-  
-  careerPath      CareerPath
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
 enum Role {
   ADMIN
   USER
@@ -51,6 +30,35 @@ enum OnboardingStep {
   PORTFOLIO
   MENTORSHIP
   RECOMMENDATIONS
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+model SurveyResponse {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  
+  // Common fields for both paths
+  experienceLevel String
+  interests       String[]  @default([])
+  weeklyHours     Int
+  goals           String[]  @default([])
+  
+  // Degree program specific fields
+  specializations String[]  @default([])
+  careerGoals     String[]  @default([])
+  timeCommitment  Int?
+  priorEducation  String?
+  portfolioUrl    String?
+  
+  careerPath      CareerPath
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Account {
@@ -81,23 +89,23 @@ model Session {
 }
 
 model User {
-  id                    String      @id @default(cuid())
+  id                    String         @id @default(cuid())
   name                  String?
-  email                 String?     @unique
+  email                 String?        @unique
   emailVerified        DateTime?
   bio                   String?
   image                String?
   hashedPassword       String?
-  role                 Role        @default(STUDENT)
-  careerPath           CareerPath?  // Using enum instead of String
-  hasCompletedOnboarding Boolean    @default(false)
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  role                 Role           @default(STUDENT)
+  careerPath           CareerPath?    
+  hasCompletedOnboarding Boolean       @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
 
   // Relations
   accounts           Account[]
   sessions           Session[]
-  taughtCourses      Course[]           @relation("InstructorCourses")
+  taughtCourses      Course[]         @relation("InstructorCourses")
   progress           StudentProgress[]
   activities         Activity[]
   enrollments        Enrollment[]
@@ -108,17 +116,32 @@ model User {
 }
 
 model Course {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   title        String
   description  String?
+  level        String?
+  duration     String?
+  thumbnail    String?
+  categoryId   String?
   instructorId String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   
-  resources    Resource[]
-  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id])
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  instructor   User       @relation("InstructorCourses", fields: [instructorId], references: [id])
   enrollments  Enrollment[] @relation("CourseEnrollments")
+  resources    Resource[]
   progress     StudentProgress[]
+
+  @@index([categoryId])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  courses   Course[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Resource {
@@ -178,12 +201,6 @@ model Enrollment {
   @@unique([userId, courseId])
 }
 
-enum EnrollmentStatus {
-  ACTIVE
-  COMPLETED
-  DROPPED
-}
-
 model Lesson {
   id          String     @id @default(cuid())
   title       String
@@ -194,37 +211,38 @@ model Lesson {
 }
 
 model UserPreferences {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  weeklyGoal        Int?     // Hours per week for learning
-  learningPath      String?  // Specific focus area or specialization
-  timezone          String?  // User's timezone for scheduling
-  emailNotifications Boolean @default(true)
-  marketingEmails    Boolean @default(true)
-  courseUpdates      Boolean @default(true)
-  preferredTags      String[] // Areas of interest
-  portfolio          String?  // Portfolio URL
-  linkedin           String?
-  twitter            String?
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  weeklyGoal          Int?     // Hours per week for learning
+  learningPath        String?  // Specific focus area or specialization
+  timezone            String?  // User's timezone for scheduling
+  emailNotifications  Boolean  @default(true)
+  marketingEmails     Boolean  @default(true)
+  courseUpdates       Boolean  @default(true)
+  preferredTags       String[] @default([])
+  portfolio           String?  // Portfolio URL
+  linkedin            String?
+  twitter             String?
   
-  user              User     @relation(fields: [userId], references: [id])
+  user                User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
 model OnboardingProgress {
-  id                     String       @id @default(cuid())
-  userId                 String       @unique
+  id                     String         @id @default(cuid())
+  userId                 String         @unique
   currentStep            OnboardingStep @default(CAREER_PATH)
-  completed             Boolean      @default(false)
-  responses             Json?        // Survey responses
-  selectedCourse        String?      // For SHORT_COURSE path
-  viewedRecommendations Boolean      @default(false)
-  acceptedCurriculum    Boolean      @default(false) // For DEGREE_PROGRAM path
-  selectedSpecializations String[]    @default([])   // For DEGREE_PROGRAM path
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @default(now()) @updatedAt
-  user                 User          @relation(fields: [userId], references: [id])
+  completed             Boolean        @default(false)
+  responses             Json?
+  selectedCourse        String?        // For SHORT_COURSE path
+  viewedRecommendations Boolean        @default(false)
+  acceptedCurriculum    Boolean        @default(false) 
+  selectedSpecializations String[]      @default([])
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  
+  user                 User            @relation(fields: [userId], references: [id])
 }
 
 model Deadline {
@@ -236,4 +254,3 @@ model Deadline {
   
   user      User     @relation(fields: [userId], references: [id])
 }
-

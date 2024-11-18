@@ -10,14 +10,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/forms/select"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/forms/sheet"
 import { useMediaQuery } from '@/hooks/use-media-query'
 
 interface CourseFiltersProps {

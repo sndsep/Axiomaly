@@ -1,9 +1,9 @@
-import React from 'react'
+//src/app/(auth)/layout.tsx
 
-interface AuthLayoutProps {
+export default function AuthLayout({
+  children,
+}: {
   children: React.ReactNode
-}
-
-export default function AuthLayout({ children }: AuthLayoutProps) {
-  return <div className="min-h-screen">{children}</div>
+}) {
+  return children
 }

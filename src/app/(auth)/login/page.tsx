@@ -1,16 +1,22 @@
-// src/app/(auth)/login/page.tsx
-
-
 import { Metadata } from "next"
+import { getServerSession } from "next-auth/next"
+import { redirect } from "next/navigation"
+import { authOptions } from "@/lib/auth"
 import { LoginForm } from "@/components/auth/login-form"
 import { PlaceholderImage } from "@/components/ui/placeholder-image"
 
 export const metadata: Metadata = {
-  title: "Login",
+  title: "Login - VFX Academy",
   description: "Login to your account",
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await getServerSession(authOptions)
+
+  if (session) {
+    redirect("/dashboard")
+  }
+
   return (
     <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">

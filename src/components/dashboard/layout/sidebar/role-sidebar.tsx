@@ -2,9 +2,9 @@
 
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/forms/button"
 import { UserRole } from "@/types/roles"
-import { LayoutDashboard, Users, BookOpen, Settings } from "lucide-react" // Import icons
+import { LayoutDashboard, Users, BookOpen, Settings, Calendar } from "lucide-react" // Import icons
 
 export function RoleSidebar() {
   const { data: session } = useSession()
@@ -14,18 +14,21 @@ export function RoleSidebar() {
     { href: "/dashboard/admin/users", label: "Users", icon: Users },
     { href: "/dashboard/admin/courses", label: "Courses", icon: BookOpen },
     { href: "/dashboard/admin/settings", label: "Settings", icon: Settings },
+    { href: "/dashboard/admin/calendar", label: "Calendario", icon: Calendar },
   ]
 
   const instructorLinks = [
     { href: "/dashboard/instructor/courses", label: "My Courses", icon: BookOpen },
     { href: "/dashboard/instructor/students", label: "Students", icon: Users },
     { href: "/dashboard/instructor/analytics", label: "Analytics", icon: LayoutDashboard },
+    { href: "/dashboard/instructor/calendar", label: "Calendario", icon: Calendar },
   ]
 
   const studentLinks = [
     { href: "/dashboard/courses", label: "Available Courses", icon: BookOpen },
     { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
     { href: "/dashboard/progress", label: "Progress", icon: LayoutDashboard },
+    { href: "/dashboard/calendar", label: "Calendario", icon: Calendar },
   ]
 
   const links = role === UserRole.ADMIN 

@@ -1,31 +1,26 @@
-// src/app/layout.tsx
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { RootProvider } from "@/components/providers/root-provider"
+import { Providers } from '@/components/providers/root-provider';
+import './globals.css';
+import { OnboardingProvider } from '@/contexts/onboarding-context';
 
-const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "VFX Academy",
-  description: "Learn VFX from industry experts",
-  keywords: ["VFX", "Visual Effects", "3D Animation", "Online Learning", "VFX Academy"],
-  authors: [{ name: "VFX Academy Team" }],
-  robots: "index, follow"
-}
+export const metadata = {
+  title: 'VFX Academy',
+  description: 'Learn VFX from industry experts',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={inter.className}>
-        <RootProvider>
-          {children}
-        </RootProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <OnboardingProvider>
+          <Providers>
+            {children}
+          </Providers>
+        </OnboardingProvider>
       </body>
     </html>
-  )
+  );
 }

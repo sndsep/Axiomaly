@@ -6,15 +6,16 @@ interface GetCoursesParams extends CourseFilters {
   search?: string
 }
 
-export async function getCourses(params: GetCoursesParams): Promise<Course[]> {
-  const queryParams = new URLSearchParams()
-  if (params.level !== 'all') queryParams.set('level', params.level)
-  if (params.progress !== 'all') queryParams.set('progress', params.progress)
-  if (params.search) queryParams.set('search', params.search)
+export async function getCourses(filters: { level: string; progress: string }) {
+  const params = new URLSearchParams(filters);
+  const response = await fetch(`/api/courses?${params.toString()}`);
 
-  const response = await fetch(`/api/courses?${queryParams}`)
   if (!response.ok) {
-    throw new Error('Failed to fetch courses')
+    throw new Error('Failed to fetch courses');
   }
-  return response.json()
+
+  const data = await response.json();
+
+  // Ensure that `data` is an array. If your API returns { courses: [...] }, return data.courses
+  return Array.isArray(data) ? data : data.courses;
 }

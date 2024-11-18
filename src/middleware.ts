@@ -8,25 +8,53 @@ export default withAuth(
     const path = req.nextUrl.pathname;
     const token = req.nextauth.token;
 
-    // If user is authenticated and trying to access auth pages, redirect to dashboard
-    if (token && (path.startsWith('/login') || path.startsWith('/register'))) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
+    // Public paths are handled in the callback
 
-    // Allow users to proceed during onboarding
+    // Handle onboarding flow
     if (path.startsWith('/onboarding/')) {
       if (!token) {
         return NextResponse.redirect(new URL('/login', req.url));
       }
+
+      // If onboarding is completed, redirect to dashboard
+      if (token.hasCompletedOnboarding) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+
+      // Handle career path based redirections
+      if (path === '/onboarding/career-path' && token.careerPath) {
+        const surveyPath = token.careerPath === 'SHORT_COURSE'
+          ? '/onboarding/short-course/survey'
+          : '/onboarding/degree-program/survey';
+        return NextResponse.redirect(new URL(surveyPath, req.url));
+      }
+
+      // Verify proper onboarding flow
+      if (token.careerPath === 'SHORT_COURSE' && path.startsWith('/onboarding/degree-program')) {
+        return NextResponse.redirect(new URL('/onboarding/short-course/survey', req.url));
+      }
+
+      if (token.careerPath === 'DEGREE_PROGRAM' && path.startsWith('/onboarding/short-course')) {
+        return NextResponse.redirect(new URL('/onboarding/degree-program/survey', req.url));
+      }
+
       return NextResponse.next();
     }
 
-    // Protect dashboard routes
-    if (path.startsWith('/dashboard/')) {
+    // Handle auth pages (login/register)
+    if (token && (path.startsWith('/login') || path.startsWith('/register'))) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
+    // Handle dashboard access
+    if (path.startsWith('/dashboard')) {
       if (!token) {
         return NextResponse.redirect(new URL('/login', req.url));
       }
-      return NextResponse.next();
+
+      if (!token.hasCompletedOnboarding) {
+        return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
+      }
     }
 
     return NextResponse.next();
@@ -36,17 +64,17 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
         
-        // Public paths that don't require authentication
         if (
           path === '/' || 
           path.startsWith('/login') || 
           path.startsWith('/register') ||
-          path.startsWith('/public')
+          path.startsWith('/public') ||
+          path.startsWith('/_next') ||
+          path.startsWith('/api/auth')
         ) {
           return true;
         }
 
-        // All other paths require authentication
         return !!token;
       },
     },
@@ -58,14 +86,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

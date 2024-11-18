@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/forms/card';
 import { Progress } from '@/components/ui/forms/progress';
 import { Button } from '@/components/ui/forms/button';
+import Calendar from './Calendar'; // Adjust the path as necessary
 
 const Dashboard = ({ courses, stats, learningPath }) => {
   return (
@@ -103,6 +104,19 @@ const Dashboard = ({ courses, stats, learningPath }) => {
             <div className="space-y-4">
               {/* Add your activity list here */}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Calendar Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Calendario
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Calendar /> {/* Include the Calendar component here */}
           </CardContent>
         </Card>
       </div>
