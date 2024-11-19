@@ -1,29 +1,31 @@
 // src/types/curriculum.ts
-
-export interface CurriculumStage {
-  title: string;
-  duration: string;
-  description: string;
-  courses: Course[];
-  learningOutcomes: string[];
-}
-
-export interface Specialization {
+export interface Course {
   id: string;
   title: string;
-  description: string;
-  careerPaths: string[];
-  coreSkills: string[];
-  courses: Course[];
+  description?: string;
+  credits: number;
+  required: boolean;
 }
 
-export interface CurriculumPlan {
-  stages: CurriculumStage[];
-  specialization: Specialization;
-  totalDuration: string;
-  certifications: string[];
-  careerOutcomes: {
-    roles: string[];
-    industries: string[];
-  };
+export interface Milestone {
+  title: string;
+  description: string;
+}
+
+export interface CurriculumModule {
+  term: number;
+  courses: Course[];
+  milestone?: Milestone;
+}
+
+export interface UserPreferences {
+  experienceLevel: string;
+  specializations: string[];
+  careerGoals: string[];
+  timeCommitment: number;
+  preferredLearningStyle: string[];
+}
+
+export interface CurriculumPlanProps {
+  userPreferences: UserPreferences;
 }

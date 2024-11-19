@@ -1,4 +1,7 @@
 // src/components/onboarding/career-path/CareerPathSelection.tsx
+// This component allows the user to select their career path
+
+
 'use client';
 
 import React from 'react';
@@ -75,27 +78,51 @@ export function CareerPathSelection() {
     setError(null);
     
     try {
+      console.log('Sending request with type:', type); // Debug
+  
       const response = await fetch('/api/user/career-path', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ type }),
+        credentials: 'same-origin'
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to save career path');
+  
+      // Debug
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+  
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response:', e);
+        throw new Error('Invalid server response');
       }
-
+  
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to save career path');
+      }
+  
       const nextRoute = type === 'SHORT_COURSE' 
         ? '/onboarding/short-course/survey'
         : '/onboarding/degree-program/survey';
-
+  
       router.push(nextRoute);
-
+  
     } catch (error) {
-      setError('Failed to save your selection. Please try again.');
+      console.error('Error in selectPath:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to save your selection. Please try again.';
+      
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to save your selection. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

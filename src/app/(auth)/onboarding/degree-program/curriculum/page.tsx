@@ -1,69 +1,74 @@
 // src/app/(auth)/onboarding/degree-program/curriculum/page.tsx
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { CurriculumPlan } from "@/components/onboarding/recommendations/CurriculumPlan";
+import { getServerSession } from 'next-auth/next';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import CurriculumPlan from '@/components/onboarding/degree-program/Curriculum';
 
-async function getCurriculumPlan(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      onboardingProgress: {
-        select: {
-          responses: true
-        }
-      }
-    }
-  });
+// Define types for our curriculum data
+interface UserPreferences {
+  experienceLevel: string;
+  specializations: string[];
+  careerGoals: string[];
+  timeCommitment: number;
+  preferredLearningStyle: string[];
+}
 
-  if (!user?.onboardingProgress?.responses) {
-    redirect('/onboarding/degree-program/survey');
-  }
-
-  // Fetch curriculum based on user's survey responses and specialization
-  const responses = user.onboardingProgress.responses as Record<string, any>;
-  
-  const curriculum = await prisma.curriculum.findFirst({
-    where: {
-      specializationId: responses.specializationTrack,
-      difficultyLevel: responses.experienceLevel
-    },
-    include: {
-      semesters: {
-        include: {
-          modules: {
-            include: {
-              courses: true
-            }
-          }
-        }
-      }
-    }
-  });
-
-  return {
-    specialization: responses.specializationTrack,
-    totalCredits: curriculum?.totalCredits || 120,
-    estimatedDuration: curriculum?.duration || "24 months",
-    semesters: curriculum?.semesters || []
+interface CurriculumPageProps {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    preferences: UserPreferences;
   };
+}
+
+async function getUserPreferences(userId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        onboardingProgress: true,
+        preferences: true,
+      },
+    });
+
+    if (!user) {
+      redirect('/login');
+    }
+
+    // Extract preferences from onboarding responses
+    const responses = user.onboardingProgress?.responses as Record<string, any> || {};
+    const preferences = user.preferences;
+
+    return {
+      experienceLevel: responses.experienceLevel || 'beginner',
+      specializations: preferences?.preferredTags || [],
+      careerGoals: responses.careerGoals || [],
+      timeCommitment: preferences?.weeklyGoal || 10,
+      preferredLearningStyle: responses.learningStyle || [],
+    };
+  } catch (error) {
+    console.error('Error fetching user preferences:', error);
+    throw error;
+  }
 }
 
 export default async function CurriculumPage() {
   const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect('/login');
   }
 
-  const curriculumData = await getCurriculumPlan(session.user.id);
+  // Get user preferences for curriculum customization
+  const userPreferences = await getUserPreferences(session.user.id);
+
+  // Log for debugging
+  console.log('User preferences:', userPreferences);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8">
-        <CurriculumPlan {...curriculumData} />
-      </div>
+      <CurriculumPlan userPreferences={userPreferences} />
     </div>
   );
 }

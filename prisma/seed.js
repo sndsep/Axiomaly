@@ -1,5 +1,4 @@
 // prisma/seed.js
-
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const bcrypt = require('bcryptjs')
@@ -8,8 +7,13 @@ async function cleanDatabase() {
   console.log('🧹 Cleaning database...')
   
   await prisma.activity.deleteMany()
+  await prisma.deadline.deleteMany()
+  await prisma.prerequisite.deleteMany()
+  await prisma.curriculum.deleteMany()
+  await prisma.specialization.deleteMany()
   await prisma.studentProgress.deleteMany()
   await prisma.enrollment.deleteMany()
+  await prisma.surveyResponse.deleteMany()
   await prisma.resource.deleteMany()
   await prisma.course.deleteMany()
   await prisma.category.deleteMany()
@@ -71,15 +75,35 @@ async function main() {
   ])
   console.log('📝 Categories created')
 
+  // Create specializations
+  const specializations = await Promise.all([
+    prisma.specialization.create({
+      data: {
+        name: 'VFX Generalist',
+        description: 'Master all aspects of VFX production'
+      }
+    }),
+    prisma.specialization.create({
+      data: {
+        name: 'Character Animation',
+        description: 'Focus on bringing characters to life'
+      }
+    }),
+    prisma.specialization.create({
+      data: {
+        name: 'FX Technical Director',
+        description: 'Specialize in effects and technical aspects'
+      }
+    })
+  ]);
+  console.log('🎯 Specializations created')
+
   // Define courses
   const coursesData = [
     {
       title: "Fundamentals of 3D Modeling",
       description: "Learn the basics of 3D modeling with industry-standard tools",
-      level: "beginner",
-      duration: "6 weeks",
-      thumbnail: "/api/placeholder/192/128?text=Fundamentals%20of%203D%20Modeling",
-      categoryId: categories[0].id, // 3D Modeling category
+      categoryId: categories[0].id,
       instructorId: instructor.id,
       resources: {
         create: [
@@ -94,10 +118,7 @@ async function main() {
     {
       title: "Advanced Animation Techniques",
       description: "Master character animation and motion dynamics",
-      level: "advanced",
-      duration: "8 weeks",
-      thumbnail: "/api/placeholder/192/128?text=Advanced%20Animation",
-      categoryId: categories[1].id, // Animation category
+      categoryId: categories[1].id,
       instructorId: instructor.id,
       resources: {
         create: [
@@ -121,6 +142,45 @@ async function main() {
   )
   console.log('📚 Courses created')
 
+  // Create curricula
+  const curricula = await Promise.all([
+    prisma.curriculum.create({
+      data: {
+        title: 'VFX Generalist Path - Beginner',
+        description: 'Comprehensive VFX education for beginners',
+        difficultyLevel: 'BEGINNER',
+        durationWeeks: 48,
+        specializationId: specializations[0].id,
+        courses: {
+          connect: [{ id: courses[0].id }]
+        }
+      }
+    }),
+    prisma.curriculum.create({
+      data: {
+        title: 'Advanced Animation Track',
+        description: 'Specialized path for character animation',
+        difficultyLevel: 'ADVANCED',
+        durationWeeks: 36,
+        specializationId: specializations[1].id,
+        courses: {
+          connect: [{ id: courses[1].id }]
+        }
+      }
+    })
+  ]);
+  console.log('📋 Curricula created')
+
+  // Create prerequisites
+  await prisma.prerequisite.create({
+    data: {
+      curriculumId: curricula[1].id,
+      courseId: courses[0].id,
+      required: true
+    }
+  });
+  console.log('🔄 Prerequisites created')
+
   // Create test student
   const student = await prisma.user.create({
     data: {
@@ -128,7 +188,7 @@ async function main() {
       name: 'Test Student',
       hashedPassword: await bcrypt.hash('student123', 12),
       role: 'STUDENT',
-      careerPath: 'SHORT_COURSE',
+      careerPath: 'DEGREE_PROGRAM',
       enrollments: {
         create: courses.map(course => ({
           courseId: course.id,
@@ -145,10 +205,21 @@ async function main() {
             description: 'Completed first assignment',
           }
         ]
+      },
+      onboardingProgress: {
+        create: {
+          currentStep: 'RECOMMENDATIONS',
+          completed: false,
+          responses: {
+            experienceLevel: 'BEGINNER',
+            interests: ['3d-modeling', 'animation'],
+            weeklyHours: 10
+          }
+        }
       }
     }
   })
-  console.log('🎓 Student with enrollments and activities created')
+  console.log('🎓 Student created')
 
   // Create progress records
   await Promise.all(courses.map(course => 

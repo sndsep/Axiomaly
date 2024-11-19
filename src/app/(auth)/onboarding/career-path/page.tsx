@@ -5,10 +5,15 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { authOptions } from "@/lib/auth"
 import { CareerPathSelection } from "@/components/onboarding/career-path/CareerPathSelection"
+import { OnboardingProvider } from '@/contexts/onboarding-context'
+import { OnboardingLayout } from '@/components/onboarding/layout/OnboardingLayout'
 
 export default async function CareerPathPage() {
   const session = await getServerSession(authOptions)
+  console.log('Page session:', session);
+
   if (!session?.user?.email) {
+    console.log('No session in page, redirecting to login');
     redirect('/login')
   }
 
@@ -26,5 +31,11 @@ export default async function CareerPathPage() {
     redirect(surveyPath)
   }
 
-  return <CareerPathSelection />
+  return (
+    <OnboardingProvider>
+      <OnboardingLayout showNavigation={false}>
+        <CareerPathSelection />
+      </OnboardingLayout>
+    </OnboardingProvider>
+  )
 }

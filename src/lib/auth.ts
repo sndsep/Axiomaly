@@ -1,12 +1,37 @@
 // src/lib/auth.ts
 import { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
 
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      role: string;
+      careerPath?: string;
+      hasCompletedOnboarding: boolean;
+      onboardingProgress?: {
+        currentStep: string;
+        completed: boolean;
+      };
+    } & DefaultSession["user"]
+  }
+
+  interface User {
+    id: string;
+    role: string;
+    careerPath?: string;
+    hasCompletedOnboarding: boolean;
+    onboardingProgress?: {
+      currentStep: string;
+      completed: boolean;
+    };
+  }
+}
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -22,7 +47,7 @@ export const authOptions: NextAuthOptions = {
           
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
-            include: { onboardingProgress: true } // Include onboarding progress
+            include: { onboardingProgress: true }
           });
 
           if (!user || !user.hashedPassword) {
@@ -57,23 +82,29 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.careerPath = user.careerPath;
-        token.hasCompletedOnboarding = user.hasCompletedOnboarding;
-        token.onboardingProgress = user.onboardingProgress;
+        return {
+          ...token,
+          id: user.id,
+          role: user.role,
+          careerPath: user.careerPath,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+          onboardingProgress: user.onboardingProgress
+        };
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.careerPath = token.careerPath;
-        session.user.hasCompletedOnboarding = token.hasCompletedOnboarding;
-        session.user.onboardingProgress = token.onboardingProgress;
-      }
-      return session;
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.id,
+          role: token.role,
+          careerPath: token.careerPath,
+          hasCompletedOnboarding: token.hasCompletedOnboarding,
+          onboardingProgress: token.onboardingProgress
+        }
+      };
     }
   },
   pages: {
@@ -81,8 +112,8 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 días
   },
-  debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET
 };

@@ -116,24 +116,20 @@ model User {
 }
 
 model Course {
-  id           String     @id @default(cuid())
-  title        String
-  description  String?
-  level        String?
-  duration     String?
-  thumbnail    String?
-  categoryId   String?
-  instructorId String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
-  category     Category?  @relation(fields: [categoryId], references: [id])
-  instructor   User       @relation("InstructorCourses", fields: [instructorId], references: [id])
-  enrollments  Enrollment[] @relation("CourseEnrollments")
-  resources    Resource[]
-  progress     StudentProgress[]
-
-  @@index([categoryId])
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  instructor    User          @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructorId  String
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  curricula     Curriculum[]
+  prerequisites Prerequisite[]
+  enrollments   Enrollment[]  @relation("CourseEnrollments")
+  progress      StudentProgress[]
+  resources     Resource[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Category {
@@ -253,4 +249,41 @@ model Deadline {
   updatedAt DateTime @updatedAt
   
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model Curriculum {
+  id               String          @id @default(cuid()) 
+  title            String
+  description      String?
+  difficultyLevel  ExperienceLevel @default(BEGINNER)
+  durationWeeks    Int
+  specializationId String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  specialization   Specialization  @relation(fields: [specializationId], references: [id])
+  courses          Course[]
+  prerequisites    Prerequisite[]
+}
+
+model Specialization {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  curricula   Curriculum[]
+}
+
+model Prerequisite {
+  id           String     @id @default(cuid())
+  curriculumId String
+  courseId     String
+  required     Boolean    @default(true)
+  curriculum   Curriculum @relation(fields: [curriculumId], references: [id])
+  course       Course     @relation(fields: [courseId], references: [id])
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE 
+  ADVANCED
 }
