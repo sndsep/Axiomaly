@@ -979,6 +979,9 @@ video {
 .w-3\/4 {
   width: 75%;
 }
+.w-32 {
+  width: 8rem;
+}
 .w-4 {
   width: 1rem;
 }
@@ -2834,6 +2837,10 @@ code {
     width: 350px;
   }
 
+  .sm\:w-auto {
+    width: auto;
+  }
+
   .sm\:max-w-sm {
     max-width: 24rem;
   }
@@ -3001,6 +3008,10 @@ code {
 
   .md\:border-t-4 {
     border-top-width: 4px;
+  }
+
+  .md\:p-8 {
+    padding: 2rem;
   }
 
   .md\:pb-0 {

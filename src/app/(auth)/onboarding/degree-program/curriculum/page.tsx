@@ -1,11 +1,15 @@
 // src/app/(auth)/onboarding/degree-program/curriculum/page.tsx
+// This component displays the user's personalized curriculum
+
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import CurriculumPlan from '@/components/onboarding/degree-program/Curriculum';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import Loading from './loading';
 
-// Define types for our curriculum data
 interface UserPreferences {
   experienceLevel: string;
   specializations: string[];
@@ -14,16 +18,7 @@ interface UserPreferences {
   preferredLearningStyle: string[];
 }
 
-interface CurriculumPageProps {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    preferences: UserPreferences;
-  };
-}
-
-async function getUserPreferences(userId: string) {
+async function getUserPreferences(userId: string): Promise<UserPreferences> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -34,10 +29,9 @@ async function getUserPreferences(userId: string) {
     });
 
     if (!user) {
-      redirect('/login');
+      throw new Error('User not found');
     }
 
-    // Extract preferences from onboarding responses
     const responses = user.onboardingProgress?.responses as Record<string, any> || {};
     const preferences = user.preferences;
 
@@ -54,21 +48,23 @@ async function getUserPreferences(userId: string) {
   }
 }
 
-export default async function CurriculumPage() {
+async function CurriculumContent() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     redirect('/login');
   }
 
-  // Get user preferences for curriculum customization
   const userPreferences = await getUserPreferences(session.user.id);
 
-  // Log for debugging
-  console.log('User preferences:', userPreferences);
+  return <CurriculumPlan userPreferences={userPreferences} />;
+}
 
+export default function CurriculumPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CurriculumPlan userPreferences={userPreferences} />
-    </div>
+    <ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <CurriculumContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

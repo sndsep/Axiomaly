@@ -5,6 +5,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/degree-program/curriculum/page.js"
     ],
+    "/(auth)/onboarding/degree-program/curriculum/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/degree-program/curriculum/loading.js"
+    ],
     "/(auth)/onboarding/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
