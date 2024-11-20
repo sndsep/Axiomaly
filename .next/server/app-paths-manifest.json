@@ -1,4 +1,6 @@
 {
+  "/api/onboarding/survey/route": "app/api/onboarding/survey/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/(auth)/onboarding/degree-program/curriculum/page": "app/(auth)/onboarding/degree-program/curriculum/page.js"
+  "/(auth)/onboarding/degree-program/curriculum/page": "app/(auth)/onboarding/degree-program/curriculum/page.js",
+  "/(auth)/onboarding/degree-program/survey/page": "app/(auth)/onboarding/degree-program/survey/page.js"
 }

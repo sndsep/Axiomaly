@@ -901,6 +901,9 @@ video {
 .h-\[1px\] {
   height: 1px;
 }
+.h-\[2px\] {
+  height: 2px;
+}
 .h-\[var\(--radix-navigation-menu-viewport-height\)\] {
   height: var(--radix-navigation-menu-viewport-height);
 }
@@ -1041,6 +1044,9 @@ video {
 }
 .max-w-2xl {
   max-width: 42rem;
+}
+.max-w-3xl {
+  max-width: 48rem;
 }
 .max-w-4xl {
   max-width: 56rem;
@@ -2036,6 +2042,9 @@ video {
 .ring-white {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity, 1));
+}
+.ring-offset-2 {
+  --tw-ring-offset-width: 2px;
 }
 .ring-offset-background {
   --tw-ring-offset-color: hsl(var(--background));
