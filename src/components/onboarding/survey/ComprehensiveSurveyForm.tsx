@@ -206,11 +206,11 @@ export function ComprehensiveSurveyForm() {
                     <FormItem key={area.id} className="flex items-start space-x-2">
                       <FormControl>
                         <Checkbox
-                          checked={field.value.includes(area.id)}
+                          checked={(field.value || []).includes(area.id)}
                           onCheckedChange={(checked) => {
                             const newValue = checked
-                              ? [...field.value, area.id]
-                              : field.value.filter(v => v !== area.id);
+                              ? [...(field.value || []), area.id]
+                              : (field.value || []).filter((id) => id !== area.id);
                             field.onChange(newValue);
                           }}
                         />
@@ -238,11 +238,11 @@ export function ComprehensiveSurveyForm() {
                     <FormItem key={industry.id} className="flex items-start space-x-2">
                       <FormControl>
                         <Checkbox
-                          checked={field.value.includes(industry.id)}
+                          checked={(field.value || []).includes(industry.id)}
                           onCheckedChange={(checked) => {
                             const newValue = checked
-                              ? [...field.value, industry.id]
-                              : field.value.filter(v => v !== industry.id);
+                              ? [...(field.value || []), industry.id]
+                              : (field.value || []).filter((id) => id !== industry.id);
                             field.onChange(newValue);
                           }}
                         />
@@ -270,11 +270,11 @@ export function ComprehensiveSurveyForm() {
                     <FormItem key={software.id} className="flex items-start space-x-2">
                       <FormControl>
                         <Checkbox
-                          checked={field.value.includes(software.id)}
+                          checked={(field.value || []).includes(software.id)}
                           onCheckedChange={(checked) => {
                             const newValue = checked
-                              ? [...field.value, software.id]
-                              : field.value.filter(v => v !== software.id);
+                              ? [...(field.value || []), software.id]
+                              : (field.value || []).filter((id) => id !== software.id);
                             field.onChange(newValue);
                           }}
                         />

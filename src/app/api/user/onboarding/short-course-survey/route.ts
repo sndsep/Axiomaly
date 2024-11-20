@@ -1,7 +1,5 @@
-// src/app/api/user/onboarding/short-course-survey/route.ts
-
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
@@ -15,7 +13,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
@@ -23,9 +21,7 @@ export async function POST(req: Request) {
 
     // Update user and onboarding progress
     const user = await prisma.user.update({
-      where: { 
-        email: session.user.email 
-      },
+      where: { email: session.user.email },
       data: {
         onboardingProgress: {
           upsert: {
@@ -58,14 +54,8 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Survey submission error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { errors: error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
-    return NextResponse.json(
-      { error: 'Failed to save survey responses' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to save survey responses' }, { status: 500 });
   }
-}
+} 

@@ -1,5 +1,3 @@
-// src/app/(auth)/onboarding/short-course/recommendations/page.tsx
-
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
@@ -10,18 +8,15 @@ import { CourseList } from "@/components/course/course-list";
 import { CourseFilters } from "@/components/course/course-filters";
 import type { Course, CourseRecommendation } from "@/types/courses";
 
-// Función para obtener las categorías
+// Function to get categories
 async function getCategories() {
   const categories = await prisma.category.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
+    select: { id: true, name: true },
   });
   return categories;
 }
 
-// Función para mapear el nivel de experiencia del survey al nivel del curso
+// Map the experience level from survey to course level
 function mapExperienceLevel(surveyLevel: string): Course['level'] {
   switch (surveyLevel.toLowerCase()) {
     case 'intermediate':
@@ -33,77 +28,59 @@ function mapExperienceLevel(surveyLevel: string): Course['level'] {
   }
 }
 
-// Función para obtener cursos recomendados basándose en las respuestas del survey
+// Function to get recommended courses based on survey responses
 async function getRecommendedCourses(userEmail: string): Promise<CourseRecommendation[]> {
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
-    include: {
-      onboardingProgress: true,
-    },
+    include: { onboardingProgress: true },
   });
 
   if (!user?.onboardingProgress?.responses?.shortCourseSurvey) {
-    return [];
+    redirect('/onboarding/short-course/survey');
   }
 
-  const survey = user.onboardingProgress.responses.shortCourseSurvey as {
-    experienceLevel: string;
-    availability: string[];
-  };
+  const survey = user.onboardingProgress.responses.shortCourseSurvey;
+  const mappedLevel = mapExperienceLevel(survey.experienceLevel);
 
   const courses = await prisma.course.findMany({
-    where: {
-      level: mapExperienceLevel(survey.experienceLevel),
-    },
+    where: { level: mappedLevel },
     include: {
-      instructor: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-        },
-      },
-      _count: {
-        select: {
-          enrollments: true,
-          lessons: true,
-        },
-      },
+      instructor: { select: { id: true, name: true, image: true } },
+      _count: { select: { enrollments: true, curricula: true, prerequisites: true } },
     },
     take: 6,
   });
 
-  // Transformar los cursos al formato CourseRecommendation
   return courses.map(course => ({
     id: course.id,
     title: course.title,
     description: course.description || '',
-    duration: course.duration || '0h',
-    level: mapExperienceLevel(course.level || 'beginner'),
-    skills: [], // Añadir cuando tengamos esta información
-    thumbnail: course.thumbnail,
+    duration: '0h', // Update when duration data is available
+    level: course.level,
+    skills: [], // Add skills mapping when implemented
+    thumbnail: '', // Add thumbnail when available
     instructor: {
       id: course.instructor.id,
       name: course.instructor.name || 'Instructor',
-      avatar: course.instructor.image || undefined,
+      avatar: course.instructor.image || '',
     },
     enrolledStudents: course._count.enrollments,
-    matchPercentage: 85, // Calcular basado en las preferencias del usuario
-    matchedInterests: [], // Añadir cuando implementemos matching de intereses
+    matchPercentage: 85, // Replace with dynamic matching logic
+    matchedInterests: [], // Implement interest matching
     createdAt: course.createdAt,
   }));
 }
 
+// Recommendations Page Component
 export default async function RecommendationsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     redirect('/login');
   }
 
-  // Verificar que el usuario haya completado el survey
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { onboardingProgress: true }
+    include: { onboardingProgress: true },
   });
 
   if (!user?.onboardingProgress?.responses?.shortCourseSurvey) {
@@ -115,37 +92,28 @@ export default async function RecommendationsPage() {
     getCategories(),
   ]);
 
-  // Inicializar progreso para cada curso
   const progress = recommendedCourses.reduce((acc, course) => ({
     ...acc,
     [course.id]: {
       percentage: 0,
       status: 'not-started' as const,
       lastUpdated: new Date(),
-    }
+    },
   }), {});
 
   const handleEnroll = async (courseId: string) => {
     'use server';
-    
+
     try {
       await prisma.enrollment.create({
-        data: {
-          userId: user.id,
-          courseId: courseId,
-          status: 'active',
-          progress: 0,
-        },
+        data: { userId: user.id, courseId, status: 'active', progress: 0 },
       });
 
       await prisma.onboardingProgress.update({
         where: { userId: user.id },
         data: {
           currentStep: 'PROFILE',
-          responses: {
-            ...user.onboardingProgress?.responses,
-            selectedCourse: courseId,
-          },
+          responses: { ...user.onboardingProgress.responses, selectedCourse: courseId },
         },
       });
 
@@ -165,32 +133,17 @@ export default async function RecommendationsPage() {
           <CardContent className="space-y-6">
             <CourseFilters
               categories={categories}
-              onSearchChange={(search) => {
-                console.log('Search:', search);
-              }}
-              onFilterChange={(filter) => {
-                console.log('Filter:', filter);
-              }}
-              onSortChange={(sort) => {
-                console.log('Sort:', sort);
-              }}
             />
-            
             {recommendedCourses.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <p>No se encontraron cursos que coincidan con tus preferencias.</p>
                 <p>Por favor, ajusta los filtros o vuelve más tarde.</p>
               </div>
             ) : (
-              <CourseList 
-                courses={recommendedCourses} 
-                progress={progress}
-                onEnroll={handleEnroll}
-              />
+              <CourseList courses={recommendedCourses} progress={progress} onEnroll={handleEnroll} />
             )}
           </CardContent>
         </Card>
-
         {recommendedCourses.length > 0 && (
           <Card>
             <CardHeader>
@@ -198,7 +151,7 @@ export default async function RecommendationsPage() {
             </CardHeader>
             <CardContent>
               <ul className="list-disc list-inside space-y-2">
-                <li>Coinciden con tu nivel de experiencia: {user.onboardingProgress?.responses?.shortCourseSurvey.experienceLevel}</li>
+                <li>Coinciden con tu nivel de experiencia: {user.onboardingProgress.responses.shortCourseSurvey.experienceLevel}</li>
                 <li>Se adaptan a tu disponibilidad de horario</li>
                 <li>Cubren las áreas de interés que seleccionaste</li>
               </ul>

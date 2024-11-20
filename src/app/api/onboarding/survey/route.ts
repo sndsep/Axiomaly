@@ -1,69 +1,79 @@
 // src/app/api/onboarding/survey/route.ts
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { OnboardingStep } from '@prisma/client';
-import { z } from 'zod';
-
 const surveySchema = z.object({
-  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  experienceLevel: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
   interests: z.array(z.string()).min(1),
-  weeklyHours: z.coerce.number().min(5).max(40),
-  priorExperience: z.string().min(10),
-  industryFocus: z.array(z.string()).min(1),
-  softwareExperience: z.array(z.string()),
-  preferredLearningStyle: z.enum(['visual', 'hands-on', 'theoretical', 'mixed'])
+  specializations: z.array(z.string()).optional(),
+  careerGoals: z.array(z.string()).optional(),
+  priorExperience: z.string().optional(),
+  education: z.string().optional(),
+  portfolio: z.string().url().optional(),
+  weeklyHours: z.number().min(1).max(40),
+  industryPreference: z.string().optional()
 });
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = await request.json();
-    const validatedData = surveySchema.parse(data);
+    const data = surveySchema.parse(await req.json());
 
-    await prisma.onboardingProgress.upsert({
-      where: {
-        userId: session.user.id,
-      },
-      create: {
-        userId: session.user.id,
-        currentStep: OnboardingStep.RECOMMENDATIONS,
-        responses: validatedData,
-      },
-      update: {
-        currentStep: OnboardingStep.RECOMMENDATIONS,
-        responses: validatedData,
-      },
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { onboardingProgress: true }
     });
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error processing survey:', error);
-    return new NextResponse(
-      error instanceof Error ? error.message : "Internal Server Error", 
-      { status: 500 }
-    );
-  }
-}
+    const nextStep = user?.careerPath === 'SHORT_COURSE' 
+      ? 'RECOMMENDATIONS' 
+      : 'BACKGROUND';
 
-export async function GET(request: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        surveyResponse: {
+          upsert: {
+            create: {
+              ...data,
+              careerPath: user?.careerPath,
+              updatedAt: new Date()
+            },
+            update: {
+              ...data,
+              updatedAt: new Date()
+            }
+          }
+        },
+        onboardingProgress: {
+          update: {
+            currentStep: nextStep,
+            responses: {
+              ...user?.onboardingProgress?.responses,
+              survey: {
+                ...data,
+                completedAt: new Date().toISOString()
+              }
+            }
+          }
+        }
+      },
+      include: {
+        onboardingProgress: true,
+        surveyResponse: true
+      }
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      user: updatedUser,
+      nextStep: `/onboarding/${nextStep.toLowerCase()}`
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
-
-    const progress = await prisma.onboardingProgress.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    return NextResponse.json({ responses: progress?.responses || null });
-  } catch (error) {
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

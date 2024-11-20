@@ -78,41 +78,27 @@ export function CareerPathSelection() {
     setError(null);
     
     try {
-      console.log('Sending request with type:', type); // Debug
-  
-      const response = await fetch('/api/user/career-path', {
+      const response = await fetch('/api/onboarding/career-path', { // Actualizado a la nueva ruta
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ type }),
-        credentials: 'same-origin'
+        body: JSON.stringify({ type })
       });
-  
-      // Debug
-      console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-  
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse response:', e);
-        throw new Error('Invalid server response');
-      }
-  
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to save career path');
+        throw new Error(data.error || 'Failed to save career path');
       }
-  
-      const nextRoute = type === 'SHORT_COURSE' 
+
+      // Usar nextStep de la respuesta si existe, sino usar la ruta por defecto
+      const nextRoute = data.nextStep || (type === 'SHORT_COURSE' 
         ? '/onboarding/short-course/survey'
-        : '/onboarding/degree-program/survey';
-  
+        : '/onboarding/degree-program/survey');
+
       router.push(nextRoute);
-  
+
     } catch (error) {
       console.error('Error in selectPath:', error);
       const errorMessage = error instanceof Error 

@@ -136,7 +136,22 @@ async function main() {
   const courses = await Promise.all(
     coursesData.map(courseData => 
       prisma.course.create({
-        data: courseData
+        data: {
+          title: "Fundamentals of 3D Modeling",
+          description: "Learn the basics of 3D modeling with industry-standard tools",
+          categoryId: "cm3q2syz00004q6eg97c5vgtw",
+          instructorId: "cm3q2syyw0002q6egkjf2d959",
+          resources: {
+            create: [
+              {
+                title: "Course Materials",
+                description: "Essential resources for the course",
+                url: "/resources/materials.pdf"
+              }
+            ]
+          },
+          level: "BEGINNER"
+        }
       })
     )
   )

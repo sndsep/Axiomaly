@@ -22,17 +22,13 @@ enum CareerPath {
 
 enum OnboardingStep {
   CAREER_PATH
-  INTERESTS
-  EXPERIENCE
-  GOALS
-  SCHEDULE
-  BACKGROUND
-  PORTFOLIO
-  MENTORSHIP
+  SURVEY
   RECOMMENDATIONS
-  SURVEY_COMPLETED
+  PROFILE
   TOUR
+  COMPLETED
 }
+
 
 enum EnrollmentStatus {
   ACTIVE
@@ -135,6 +131,7 @@ model Course {
   resources     Resource[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  level         String
 }
 
 model Category {
@@ -231,19 +228,19 @@ model UserPreferences {
 }
 
 model OnboardingProgress {
-  id                     String         @id @default(cuid())
-  userId                 String         @unique
-  currentStep            OnboardingStep @default(CAREER_PATH)
-  completed             Boolean        @default(false)
-  responses             Json?
-  selectedCourse        String?        // For SHORT_COURSE path
-  viewedRecommendations Boolean        @default(false)
-  acceptedCurriculum    Boolean        @default(false) 
-  selectedSpecializations String[]      @default([])
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
+  id                    String   @id @default(cuid())
+  userId               String   @unique
+  currentStep          OnboardingStep @default(CAREER_PATH)
+  completed            Boolean  @default(false)
+  responses            Json?    // Store onboarding responses
+  selectedCourse       String?  // For short course path
+  viewedRecommendations Boolean @default(false)
+  acceptedCurriculum   Boolean @default(false)
+  selectedSpecializations String[] @default([])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
   
-  user                 User            @relation(fields: [userId], references: [id])
+  user                User     @relation(fields: [userId], references: [id])
 }
 
 model Deadline {

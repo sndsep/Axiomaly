@@ -45,8 +45,31 @@ export function PlatformTour() {
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
+      // First, update the onboarding progress
+      const progressResponse = await fetch('/api/user/onboarding/progress', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentStep: 'COMPLETED',
+          completed: true
+        }),
+      });
+
+      if (!progressResponse.ok) {
+        throw new Error('Failed to update onboarding progress');
+      }
+
+      // Then complete the onboarding
       const response = await fetch('/api/user/complete-onboarding', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hasCompletedOnboarding: true
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to complete onboarding');
@@ -57,7 +80,9 @@ export function PlatformTour() {
       });
 
       router.push('/dashboard');
+      router.refresh(); // Force a refresh to update the navigation state
     } catch (error) {
+      console.error('Error completing onboarding:', error);
       toast({
         title: "Error",
         description: "Failed to complete setup. Please try again.",
