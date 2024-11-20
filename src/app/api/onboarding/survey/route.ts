@@ -32,11 +32,11 @@ export async function POST(request: Request) {
       },
       create: {
         userId: session.user.id,
-        currentStep: OnboardingStep.SURVEY_COMPLETED,
+        currentStep: OnboardingStep.RECOMMENDATIONS,
         responses: validatedData,
       },
       update: {
-        currentStep: OnboardingStep.SURVEY_COMPLETED,
+        currentStep: OnboardingStep.RECOMMENDATIONS,
         responses: validatedData,
       },
     });

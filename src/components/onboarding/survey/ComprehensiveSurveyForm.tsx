@@ -1,4 +1,3 @@
-// src/components/onboarding/survey/ComprehensiveSurveyForm.tsx
 'use client';
 
 import React from 'react';
@@ -6,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/forms/card';
 import { Button } from '@/components/ui/forms/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/forms/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/forms/radio-group';
@@ -135,237 +133,232 @@ export function ComprehensiveSurveyForm() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto flex items-center justify-center min-h-[200px]">
+      <div className="flex items-center justify-center min-h-[200px]">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="container max-w-4xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Tell Us About Your VFX Journey</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Experience Level */}
-              <FormField
-                control={form.control}
-                name="experienceLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Experience Level</FormLabel>
-                    <FormControl>
-                      <RadioGroup 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        className="flex space-x-4"
-                      >
-                        {['beginner', 'intermediate', 'advanced'].map((level) => (
-                          <FormItem key={level} className="flex items-center space-x-2">
-                            <FormControl>
-                              <RadioGroupItem value={level} />
-                            </FormControl>
-                            <FormLabel className="font-normal capitalize">
-                              {level}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <div className="p-8">
+      <h1 className="text-2xl font-semibold mb-6">Tell Us About Your VFX Journey</h1>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Experience Level */}
+          <FormField
+            control={form.control}
+            name="experienceLevel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Experience Level</FormLabel>
+                <FormControl>
+                  <RadioGroup 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    className="flex space-x-4"
+                  >
+                    {['beginner', 'intermediate', 'advanced'].map((level) => (
+                      <FormItem key={level} className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value={level} />
+                        </FormControl>
+                        <FormLabel className="font-normal capitalize">
+                          {level}
+                        </FormLabel>
+                      </FormItem>
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Prior Experience */}
-              <FormField
-                control={form.control}
-                name="priorExperience"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prior Experience</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Describe your experience with VFX..."
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Prior Experience */}
+          <FormField
+            control={form.control}
+            name="priorExperience"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Prior Experience</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Tell us about your experience in VFX or related fields..."
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* VFX Areas */}
-              <FormField
-                control={form.control}
-                name="interests"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Areas of Interest</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      {VFX_AREAS.map((area) => (
-                        <FormItem key={area.id} className="flex items-start space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value.includes(area.id)}
-                              onCheckedChange={(checked) => {
-                                const newValue = checked
-                                  ? [...field.value, area.id]
-                                  : field.value.filter(v => v !== area.id);
-                                field.onChange(newValue);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {area.label}
-                          </FormLabel>
-                        </FormItem>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* VFX Areas */}
+          <FormField
+            control={form.control}
+            name="interests"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Areas of Interest</FormLabel>
+                <div className="grid grid-cols-2 gap-4">
+                  {VFX_AREAS.map((area) => (
+                    <FormItem key={area.id} className="flex items-start space-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value.includes(area.id)}
+                          onCheckedChange={(checked) => {
+                            const newValue = checked
+                              ? [...field.value, area.id]
+                              : field.value.filter(v => v !== area.id);
+                            field.onChange(newValue);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">
+                        {area.label}
+                      </FormLabel>
+                    </FormItem>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Industry Focus */}
-              <FormField
-                control={form.control}
-                name="industryFocus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Industry Focus</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      {INDUSTRIES.map((industry) => (
-                        <FormItem key={industry.id} className="flex items-start space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value.includes(industry.id)}
-                              onCheckedChange={(checked) => {
-                                const newValue = checked
-                                  ? [...field.value, industry.id]
-                                  : field.value.filter(v => v !== industry.id);
-                                field.onChange(newValue);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {industry.label}
-                          </FormLabel>
-                        </FormItem>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Industry Focus */}
+          <FormField
+            control={form.control}
+            name="industryFocus"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Industry Focus</FormLabel>
+                <div className="grid grid-cols-2 gap-4">
+                  {INDUSTRIES.map((industry) => (
+                    <FormItem key={industry.id} className="flex items-start space-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value.includes(industry.id)}
+                          onCheckedChange={(checked) => {
+                            const newValue = checked
+                              ? [...field.value, industry.id]
+                              : field.value.filter(v => v !== industry.id);
+                            field.onChange(newValue);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">
+                        {industry.label}
+                      </FormLabel>
+                    </FormItem>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Software Experience */}
-              <FormField
-                control={form.control}
-                name="softwareExperience"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Software Experience</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      {SOFTWARE.map((software) => (
-                        <FormItem key={software.id} className="flex items-start space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value.includes(software.id)}
-                              onCheckedChange={(checked) => {
-                                const newValue = checked
-                                  ? [...field.value, software.id]
-                                  : field.value.filter(v => v !== software.id);
-                                field.onChange(newValue);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {software.label}
-                          </FormLabel>
-                        </FormItem>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Software Experience */}
+          <FormField
+            control={form.control}
+            name="softwareExperience"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Software Experience</FormLabel>
+                <div className="grid grid-cols-2 gap-4">
+                  {SOFTWARE.map((software) => (
+                    <FormItem key={software.id} className="flex items-start space-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value.includes(software.id)}
+                          onCheckedChange={(checked) => {
+                            const newValue = checked
+                              ? [...field.value, software.id]
+                              : field.value.filter(v => v !== software.id);
+                            field.onChange(newValue);
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">
+                        {software.label}
+                      </FormLabel>
+                    </FormItem>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Weekly Hours */}
-              <FormField
-                control={form.control}
-                name="weeklyHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Weekly Hours Available</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number"
-                        min={5}
-                        max={40}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Weekly Hours */}
+          <FormField
+            control={form.control}
+            name="weeklyHours"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Weekly Hours Available</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number"
+                    min={5}
+                    max={40}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Learning Style */}
-              <FormField
-                control={form.control}
-                name="preferredLearningStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preferred Learning Style</FormLabel>
-                    <FormControl>
-                      <RadioGroup 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        className="grid grid-cols-2 gap-4"
-                      >
-                        {[
-                          { value: 'visual', label: 'Visual Learning' },
-                          { value: 'hands-on', label: 'Hands-on Practice' },
-                          { value: 'theoretical', label: 'Theoretical Study' },
-                          { value: 'mixed', label: 'Mixed Approach' },
-                        ].map((style) => (
-                          <FormItem key={style.value} className="flex items-center space-x-2">
-                            <FormControl>
-                              <RadioGroupItem value={style.value} />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {style.label}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Learning Style */}
+          <FormField
+            control={form.control}
+            name="preferredLearningStyle"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preferred Learning Style</FormLabel>
+                <FormControl>
+                  <RadioGroup 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    className="grid grid-cols-2 gap-4"
+                  >
+                    {[
+                      { value: 'visual', label: 'Visual Learning' },
+                      { value: 'hands-on', label: 'Hands-on Practice' },
+                      { value: 'theoretical', label: 'Theoretical Study' },
+                      { value: 'mixed', label: 'Mixed Approach' },
+                    ].map((style) => (
+                      <FormItem key={style.value} className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value={style.value} />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {style.label}
+                        </FormLabel>
+                      </FormItem>
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : 'Continue to Curriculum Plan'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : 'Continue to Curriculum Plan'}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }

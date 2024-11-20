@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { OnboardingLayout } from '@/components/onboarding/layout/OnboardingLayout';
 import { ComprehensiveSurveyForm } from '@/components/onboarding/survey/ComprehensiveSurveyForm';
 
 export default async function DegreeProgramSurveyPage() {
@@ -32,9 +31,5 @@ export default async function DegreeProgramSurveyPage() {
     redirect('/onboarding/degree-program/curriculum');
   }
 
-  return (
-    <OnboardingLayout>
-      <ComprehensiveSurveyForm />
-    </OnboardingLayout>
-  );
+  return <ComprehensiveSurveyForm />;
 }

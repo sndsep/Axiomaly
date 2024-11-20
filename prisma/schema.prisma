@@ -30,6 +30,8 @@ enum OnboardingStep {
   PORTFOLIO
   MENTORSHIP
   RECOMMENDATIONS
+  SURVEY_COMPLETED
+  TOUR
 }
 
 enum EnrollmentStatus {
@@ -91,10 +93,13 @@ model Session {
 model User {
   id                    String         @id @default(cuid())
   name                  String?
+  displayName           String?
   email                 String?        @unique
   emailVerified        DateTime?
   bio                   String?
   image                String?
+  location              String?
+  socials               Json?
   hashedPassword       String?
   role                 Role           @default(STUDENT)
   careerPath           CareerPath?    
