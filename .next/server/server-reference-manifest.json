@@ -1,14 +1,5 @@
 {
-  "node": {
-    "72cb26fa2dad953a69a6b5fa5f592dc2bb923b4d": {
-      "workers": {
-        "app/(auth)/onboarding/short-course/recommendations/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FVolumes%2FDockDisk%2F10%20PROJECTS%2Faxiomaly-new%2Fsrc%2Fapp%2F(auth)%2Fonboarding%2Fshort-course%2Frecommendations%2Fpage.tsx%22%2C%5B%22%24%24ACTION_0%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/(auth)/onboarding/short-course/recommendations/page": "rsc"
-      }
-    }
-  },
+  "node": {},
   "edge": {},
-  "encryptionKey": "xWW7+Ujs9XxL67fCKZE6QNauLis2639dyOSxw3+eQUY="
+  "encryptionKey": "g2O92ufJ1PLbPGGticZ9iuObJGrOyEljJCdzZ+e6CTc="
 }

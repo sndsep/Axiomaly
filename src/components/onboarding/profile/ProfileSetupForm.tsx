@@ -54,6 +54,7 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
   });
 
   async function onSubmit(data: ProfileFormValues) {
+    console.log('Submitting profile data:', data);
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/user/profile', {

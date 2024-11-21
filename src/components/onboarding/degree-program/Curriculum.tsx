@@ -90,6 +90,7 @@ export default function Curriculum() {
   const router = useRouter();
   const { toast } = useToast();
   const [isAccepting, setIsAccepting] = useState(false);
+  const selectedSpecialization = 'your_specialization_value';
 
   // This would come from an API based on user preferences in production
   const curriculumPlan: CurriculumModule[] = [
@@ -114,19 +115,20 @@ export default function Curriculum() {
       const response = await fetch('/api/onboarding/accept-curriculum', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accepted: true }),
+        body: JSON.stringify({ accepted: true, specialization: selectedSpecialization }),
       });
   
       if (!response.ok) {
-        throw new Error('Failed to save curriculum acceptance');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save curriculum acceptance');
       }
   
       toast({
         title: "Curriculum plan accepted!",
-        description: "Let's continue with your profile setup.", // Texto actualizado
+        description: "Let's continue with your profile setup.",
       });
   
-      router.push('/onboarding/profile'); // Cambiado de recommendations a profile
+      router.push('/onboarding/profile');
   
     } catch (error) {
       console.error('Error accepting curriculum:', error);

@@ -2,63 +2,31 @@
 
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
-
-const profileSchema = z.object({
-  fullName: z.string().min(2),
-  displayName: z.string().min(2),
-  bio: z.string().max(300).optional(),
-  location: z.string().optional(),
-  linkedin: z.string().url().optional().or(z.literal('')),
-  github: z.string().url().optional().or(z.literal('')),
-  website: z.string().url().optional().or(z.literal(''))
-});
+import { prisma } from '@/lib/prisma';
 
 export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
-    const data = profileSchema.parse(body);
+    const { name, email, ...otherData } = body;
 
-    await prisma.user.update({
-      where: { email: session.user.email },
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
       data: {
-        name: data.fullName,
-        displayName: data.displayName,
-        bio: data.bio,
-        location: data.location,
-        socials: {
-          linkedin: data.linkedin,
-          github: data.github,
-          website: data.website
-        },
-        onboardingProgress: {
-          update: {
-            currentStep: 'TOUR',
-            responses: {
-              profileCompleted: true
-            }
-          }
-        }
+        name,
+        email,
+        ...otherData,
       },
     });
 
-    return NextResponse.json({ success: true });
-
+    return NextResponse.json({ success: true, user: updatedUser });
   } catch (error) {
-    console.error('Profile update error:', error);
-    
-    if (error instanceof z.ZodError) {
-      return new NextResponse('Invalid profile data', { status: 400 });
-    }
-
-    return new NextResponse('Internal server error', { status: 500 });
+    console.error('Error updating user profile:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

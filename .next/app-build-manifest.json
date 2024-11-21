@@ -1,9 +1,19 @@
 {
   "pages": {
-    "/page": [
+    "/(auth)/onboarding/degree-program/survey/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/(auth)/onboarding/degree-program/survey/page.js"
+    ],
+    "/(auth)/onboarding/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/layout.js"
+    ],
+    "/(auth)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -26,30 +36,40 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/(auth)/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/login/page.js"
+    ],
     "/(auth)/onboarding/career-path/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/career-path/page.js"
     ],
-    "/(auth)/onboarding/layout": [
+    "/(auth)/onboarding/degree-program/curriculum/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/layout.js"
+      "static/chunks/app/(auth)/onboarding/degree-program/curriculum/page.js"
     ],
-    "/(auth)/layout": [
+    "/(auth)/onboarding/degree-program/curriculum/loading": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/layout.js"
+      "static/chunks/app/(auth)/onboarding/degree-program/curriculum/loading.js"
     ],
-    "/(auth)/onboarding/short-course/survey/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/short-course/survey/page.js"
+      "static/chunks/app/_not-found/page.js"
     ],
-    "/(auth)/onboarding/short-course/recommendations/page": [
+    "/(auth)/onboarding/profile/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/short-course/recommendations/page.js"
+      "static/chunks/app/(auth)/onboarding/profile/page.js"
     ]
   }
 }

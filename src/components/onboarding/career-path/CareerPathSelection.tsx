@@ -78,7 +78,7 @@ export function CareerPathSelection() {
     setError(null);
     
     try {
-      const response = await fetch('/api/onboarding/career-path', { // Actualizado a la nueva ruta
+      const response = await fetch('/api/onboarding/career-path', { // New route
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
@@ -92,7 +92,7 @@ export function CareerPathSelection() {
         throw new Error(data.error || 'Failed to save career path');
       }
 
-      // Usar nextStep de la respuesta si existe, sino usar la ruta por defecto
+      // Use nextStep from response if it exists, otherwise use default route
       const nextRoute = data.nextStep || (type === 'SHORT_COURSE' 
         ? '/onboarding/short-course/survey'
         : '/onboarding/degree-program/survey');

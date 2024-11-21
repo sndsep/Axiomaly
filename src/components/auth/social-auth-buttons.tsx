@@ -1,5 +1,5 @@
 // components/auth/social-auth-buttons.tsx
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/forms/button"
 import { Github, Google } from "lucide-react"
 
 export const SocialAuthButtons = () => {
