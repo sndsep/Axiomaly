@@ -55,6 +55,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/profile/page.js"
+    ],
+    "/(auth)/onboarding/tour/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/tour/page.js"
     ]
   }
 }

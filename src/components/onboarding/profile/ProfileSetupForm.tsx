@@ -1,28 +1,21 @@
 // src/components/onboarding/profile/ProfileSetupForm.tsx
 'use client';
+
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { profileSchema } from '@/lib/validators/profile';
+import type { z } from 'zod';
 import { Button } from '@/components/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/forms/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/forms/form';
 import { Input } from '@/components/ui/forms/input';
 import { Textarea } from '@/components/ui/forms/textarea';
+import { Switch } from '@/components/ui/forms/switch';
 import { useToast } from '@/components/ui/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { AvatarUpload } from './AvatarUpload';
-
-const profileSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  displayName: z.string().min(2, 'Display name must be at least 2 characters'),
-  bio: z.string().max(300, 'Bio must be less than 300 characters').optional(),
-  location: z.string().optional(),
-  linkedin: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  github: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  website: z.string().url('Must be a valid URL').optional().or(z.literal(''))
-});
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -43,40 +36,57 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: user.name || '',
-      displayName: user.name || '',
+      name: user.name || '',
+      email: user.email || '',
       bio: '',
-      location: '',
-      linkedin: '',
-      github: '',
-      website: ''
+      urls: {
+        portfolio: '',
+        linkedin: '',
+        twitter: ''
+      },
+      preferences: {
+        theme: 'system',
+        emailNotifications: true,
+        marketingEmails: false,
+        courseUpdates: true
+      }
     }
   });
 
   async function onSubmit(data: ProfileFormValues) {
-    console.log('Submitting profile data:', data);
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/user/onboarding/profile', {
+      console.log('Submitting profile data:', data);
+      
+      const response = await fetch('/api/onboarding/profile', { // Updated API route
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: user.name, email: user.email, bio: data.bio }),
+        body: JSON.stringify({
+          name: data.name,
+          bio: data.bio,
+        }),
       });
-
-      if (!response.ok) throw new Error('Failed to update profile');
-
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to update profile');
+      }
+  
+      const result = await response.json();
+      
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been saved successfully.",
+        title: "Success",
+        description: result.message || "Profile updated successfully",
       });
-
+  
       router.push('/onboarding/tour');
     } catch (error) {
+      console.error('Profile update error:', error);
       toast({
         title: "Error",
-        description: "Failed to update your profile. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update profile",
         variant: "destructive",
       });
     } finally {
@@ -100,29 +110,15 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-6">
             <FormField
               control={form.control}
-              name="fullName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Your full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="displayName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Display Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="How you want to be known" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -147,24 +143,24 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="City, Country" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="linkedin"
+                name="urls.portfolio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Portfolio Website</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="urls.linkedin"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>LinkedIn Profile</FormLabel>
@@ -175,31 +171,39 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="space-y-4">
+              <h3 className="font-medium">Preferences</h3>
+              
               <FormField
                 control={form.control}
-                name="github"
+                name="preferences.emailNotifications"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GitHub Profile</FormLabel>
+                  <FormItem className="flex items-center justify-between">
+                    <FormLabel>Email Notifications</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://github.com/..." {...field} />
+                      <Switch 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="website"
+                name="preferences.courseUpdates"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Personal Website</FormLabel>
+                  <FormItem className="flex items-center justify-between">
+                    <FormLabel>Course Updates</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} />
+                      <Switch 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -216,6 +220,7 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
               <Button 
                 type="submit"
                 disabled={isSubmitting}
+                onClick={form.handleSubmit(onSubmit)}
               >
                 {isSubmitting ? (
                   <>
@@ -227,7 +232,7 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
                 )}
               </Button>
             </div>
-          </form>
+          </div>
         </Form>
       </CardContent>
     </Card>
