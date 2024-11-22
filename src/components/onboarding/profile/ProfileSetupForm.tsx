@@ -57,10 +57,12 @@ export function ProfileSetupForm({ user }: ProfileSetupFormProps) {
     console.log('Submitting profile data:', data);
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      const response = await fetch('/api/user/onboarding/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: user.name, email: user.email, bio: data.bio }),
       });
 
       if (!response.ok) throw new Error('Failed to update profile');

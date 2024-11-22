@@ -17,11 +17,17 @@ import {
 import { useToast } from '@/components/ui/hooks/use-toast';
 
 interface AvatarUploadProps {
+  user: {
+    id: string;
+    name?: string | null;
+    email: string;
+    image?: string | null;
+  };
+  onUploadComplete: (imageUrl: string) => void;
   currentImage?: string | null;
-  userEmail?: string;
 }
 
-export function AvatarUpload({ currentImage, userEmail }: AvatarUploadProps) {
+export function AvatarUpload({ user, onUploadComplete, currentImage }: AvatarUploadProps) {
   const [preview, setPreview] = React.useState<string | null>(null);
   const [isOpen, setIsOpen] = React.useState(false);
   const [isUploading, setIsUploading] = React.useState(false);
@@ -114,7 +120,7 @@ export function AvatarUpload({ currentImage, userEmail }: AvatarUploadProps) {
           <Avatar className="h-24 w-24">
             <AvatarImage src={currentImage || undefined} />
             <AvatarFallback>
-              {userEmail ? getInitials(userEmail) : '??'}
+              {user.email ? getInitials(user.email) : '??'}
             </AvatarFallback>
           </Avatar>
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">

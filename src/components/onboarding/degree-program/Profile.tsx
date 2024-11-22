@@ -20,8 +20,8 @@ const Profile: React.FC = () => {
     event.preventDefault();
 
     try {
-      const response = await fetch('/api/user/onboarding/profile', {
-        method: 'POST',
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
