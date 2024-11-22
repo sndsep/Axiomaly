@@ -1,118 +1,105 @@
 // src/components/onboarding/career-path/CareerPathSelection.tsx
-// This component allows the user to select their career path
-
-
 'use client';
 
-import React from 'react';
-import { Rocket, GraduationCap, Clock, Target, Trophy, Users, BookOpen, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useToast } from '@/components/ui/hooks/use-toast';
 import { Button } from '@/components/ui/forms/button';
 import { Card, CardContent } from '@/components/ui/forms/card';
 import { Alert, AlertDescription } from '@/components/ui/forms/alert';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/hooks/use-toast';
+import { Loader2, Users, BookOpen, Rocket, Clock, GraduationCap, Target, Trophy } from 'lucide-react';
+import { CareerPath } from '@prisma/client';
 
-type CareerPathType = 'SHORT_COURSE' | 'DEGREE_PROGRAM';
+// Career path features configuration
+const pathFeatures = {
+  shortCourse: {
+    type: 'SHORT_COURSE' as CareerPath,
+    title: "Short Course",
+    description: "Master specific skills fast",
+    color: "border-blue-400",
+    icon: <Rocket className="w-8 h-8 text-blue-600" />,
+    features: [
+      {
+        icon: <Clock className="w-6 h-6" />,
+        title: "Duration",
+        description: "1-3 months per course"
+      },
+      {
+        icon: <Target className="w-6 h-6" />,
+        title: "Focus",
+        description: "Specific VFX skills"
+      },
+      {
+        icon: <Trophy className="w-6 h-6" />,
+        title: "Outcome",
+        description: "Course certificates"
+      }
+    ]
+  },
+  degreeProgram: {
+    type: 'DEGREE_PROGRAM' as CareerPath,
+    title: "Degree Program",
+    description: "Become a complete VFX artist",
+    color: "border-purple-400",
+    icon: <GraduationCap className="w-8 h-8 text-purple-600" />,
+    features: [
+      {
+        icon: <Clock className="w-6 h-6" />,
+        title: "Duration",
+        description: "12-24 months program"
+      },
+      {
+        icon: <Target className="w-6 h-6" />,
+        title: "Focus",
+        description: "Complete VFX education"
+      },
+      {
+        icon: <Trophy className="w-6 h-6" />,
+        title: "Outcome",
+        description: "Professional degree"
+      }
+    ]
+  }
+};
 
 export function CareerPathSelection() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = React.useState<CareerPathType | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<CareerPath | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const pathFeatures = {
-    shortCourse: {
-      icon: <Rocket className="w-8 h-8 text-blue-600" />,
-      title: "Short Course",
-      description: "Master specific skills fast",
-      color: "border-blue-400",
-      type: 'SHORT_COURSE' as const,
-      features: [
-        {
-          icon: <Clock className="w-6 h-6" />,
-          title: "Duration",
-          description: "1-3 months per course"
-        },
-        {
-          icon: <Target className="w-6 h-6" />,
-          title: "Focus",
-          description: "Specific VFX skills"
-        },
-        {
-          icon: <Trophy className="w-6 h-6" />,
-          title: "Outcome",
-          description: "Course certificates"
-        }
-      ]
-    },
-    degreeProgram: {
-      icon: <GraduationCap className="w-8 h-8 text-purple-600" />,
-      title: "Degree Program",
-      description: "Become a complete VFX artist",
-      color: "border-purple-400",
-      type: 'DEGREE_PROGRAM' as const,
-      features: [
-        {
-          icon: <Clock className="w-6 h-6" />,
-          title: "Duration",
-          description: "12-24 months program"
-        },
-        {
-          icon: <Target className="w-6 h-6" />,
-          title: "Focus",
-          description: "Complete VFX education"
-        },
-        {
-          icon: <Trophy className="w-6 h-6" />,
-          title: "Outcome",
-          description: "Professional degree"
-        }
-      ]
-    }
-  };
-
-  const selectPath = async (type: CareerPathType) => {
-    if (isLoading) return;
-    
-    setIsLoading(type);
+  const handlePathSelect = async (path: CareerPath) => {
     setError(null);
-    
+    setIsSubmitting(path);
     try {
-      const response = await fetch('/api/onboarding/career-path', { // New route
+      // Save career path selection
+      const response = await fetch('/api/onboarding/career-path', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ careerPath: path }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to save career path');
+        throw new Error('Failed to save career path');
       }
 
-      // Use nextStep from response if it exists, otherwise use default route
-      const nextRoute = data.nextStep || (type === 'SHORT_COURSE' 
+      // Determine next route based on path
+      const nextRoute = path === 'SHORT_COURSE'
         ? '/onboarding/short-course/survey'
-        : '/onboarding/degree-program/survey');
+        : '/onboarding/degree-program/survey';
 
+      // Navigate to appropriate survey
       router.push(nextRoute);
-
     } catch (error) {
-      console.error('Error in selectPath:', error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to save your selection. Please try again.';
-      
-      setError(errorMessage);
+      console.error('Error:', error);
+      setError('Failed to save your selection. Please try again.');
       toast({
         title: "Error",
-        description: errorMessage,
+        description: "Failed to save your selection. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(null);
+      setIsSubmitting(null);
     }
   };
 
@@ -159,10 +146,10 @@ export function CareerPathSelection() {
 
               <Button 
                 className="w-full"
-                onClick={() => selectPath(path.type)}
-                disabled={isLoading !== null}
+                onClick={() => handlePathSelect(path.type)}
+                disabled={isSubmitting !== null}
               >
-                {isLoading === path.type ? (
+                {isSubmitting === path.type ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Selecting...
@@ -202,5 +189,3 @@ export function CareerPathSelection() {
     </section>
   );
 }
-
-export default CareerPathSelection;

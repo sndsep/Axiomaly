@@ -45,47 +45,31 @@ export function PlatformTour() {
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
-      // First, update the onboarding progress
-      const progressResponse = await fetch('/api/user/onboarding/progress', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentStep: 'COMPLETED',
-          completed: true
-        }),
-      });
-
-      if (!progressResponse.ok) {
-        throw new Error('Failed to update onboarding progress');
-      }
-
-      // Then complete the onboarding
-      const response = await fetch('/api/user/complete-onboarding', {
+      const response = await fetch('/api/onboarding/complete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          hasCompletedOnboarding: true
-        }),
+        }
       });
 
-      if (!response.ok) throw new Error('Failed to complete onboarding');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to complete onboarding');
+      }
 
       toast({
         title: "Welcome aboard!",
         description: "You're all set to start your VFX journey.",
       });
 
-      router.push('/dashboard');
-      router.refresh(); // Force a refresh to update the navigation state
+      // Use replace instead of push to prevent back navigation
+      router.replace('/dashboard');
     } catch (error) {
       console.error('Error completing onboarding:', error);
       toast({
         title: "Error",
-        description: "Failed to complete setup. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to complete setup. Please try again.",
         variant: "destructive",
       });
     } finally {

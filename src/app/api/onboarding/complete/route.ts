@@ -3,49 +3,63 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
-import { OnboardingStep } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return new NextResponse(
+        JSON.stringify({ message: 'Unauthorized' }), 
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { 
+        email: session.user.email 
+      },
       data: {
         hasCompletedOnboarding: true,
-            // Start of Selection
-            onboardingProgress: {
-              update: {
-                currentStep: OnboardingStep.TOUR,
-                completed: true,
-                updatedAt: new Date(),
-                responses: {
-                  onboardingCompletedAt: new Date().toISOString()
-                }
-              }
+        onboardingProgress: {
+          update: {
+            completed: true,
+            responses: {
+              onboardingCompletedAt: new Date().toISOString()
             }
-                // Start of Selection
-                },
-              }
-            }
-          },
-          include: {
-            onboardingProgress: true,
-            preferences: true,
           }
+        }
+      },
+      include: {
+        onboardingProgress: true
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      user: updatedUser,
-      redirectTo: '/dashboard'
-    });
+    return new NextResponse(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Onboarding completed successfully',
+        user: updatedUser 
+      }),
+      { 
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
   } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error completing onboarding:', error);
+    return new NextResponse(
+      JSON.stringify({ 
+        success: false, 
+        message: 'Failed to complete onboarding' 
+      }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 }

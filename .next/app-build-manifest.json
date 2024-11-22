@@ -1,9 +1,19 @@
 {
   "pages": {
-    "/page": [
+    "/(auth)/onboarding/tour/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/(auth)/onboarding/tour/page.js"
+    ],
+    "/(auth)/onboarding/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/layout.js"
+    ],
+    "/(auth)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -31,15 +41,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/degree-program/survey/page.js"
     ],
-    "/(auth)/onboarding/layout": [
+    "/(auth)/onboarding/profile/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/layout.js"
-    ],
-    "/(auth)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/layout.js"
+      "static/chunks/app/(auth)/onboarding/profile/page.js"
     ],
     "/(auth)/onboarding/degree-program/curriculum/page": [
       "static/chunks/webpack.js",
@@ -51,15 +56,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/degree-program/curriculum/loading.js"
     ],
-    "/(auth)/onboarding/profile/page": [
+    "/(auth)/onboarding/career-path/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/profile/page.js"
-    ],
-    "/(auth)/onboarding/tour/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/tour/page.js"
+      "static/chunks/app/(auth)/onboarding/career-path/page.js"
     ]
   }
 }

@@ -2,48 +2,81 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
+import { OnboardingStep, CareerPath } from "@prisma/client";
+
+const ONBOARDING_FLOWS = {
+  [CareerPath.SHORT_COURSE]: {
+    [OnboardingStep.CAREER_PATH]: '/onboarding/career-path',
+    [OnboardingStep.SURVEY]: '/onboarding/short-course/survey',
+    [OnboardingStep.RECOMMENDATIONS]: '/onboarding/short-course/recommendations',
+    [OnboardingStep.PROFILE]: '/onboarding/profile',
+    [OnboardingStep.TOUR]: '/onboarding/tour',
+    [OnboardingStep.COMPLETED]: '/dashboard'
+  },
+  [CareerPath.DEGREE_PROGRAM]: {
+    [OnboardingStep.CAREER_PATH]: '/onboarding/career-path',
+    [OnboardingStep.SURVEY]: '/onboarding/degree-program/survey',
+    [OnboardingStep.RECOMMENDATIONS]: '/onboarding/degree-program/curriculum',
+    [OnboardingStep.PROFILE]: '/onboarding/profile',
+    [OnboardingStep.TOUR]: '/onboarding/tour',
+    [OnboardingStep.COMPLETED]: '/dashboard'
+  }
+} as const;
+
+// Get the next step in the onboarding flow
+function getNextStep(currentStep: OnboardingStep, careerPath: CareerPath): string {
+  const flow = ONBOARDING_FLOWS[careerPath];
+  const steps = Object.values(OnboardingStep);
+  const currentIndex = steps.indexOf(currentStep);
+  const nextStep = steps[currentIndex + 1];
+  
+  return flow[nextStep] || '/dashboard';
+}
 
 export default withAuth(
   async function middleware(req: NextRequestWithAuth) {
     const path = req.nextUrl.pathname;
     const token = req.nextauth.token;
 
-    // Public paths are handled in the callback
-
     // Handle onboarding flow
     if (path.startsWith('/onboarding/')) {
+      // Authentication check
       if (!token) {
         return NextResponse.redirect(new URL('/login', req.url));
       }
 
-      // If onboarding is completed, redirect to dashboard
+      // Redirect completed onboarding to dashboard
       if (token.hasCompletedOnboarding) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
       }
 
-      // Handle career path based redirections
-      if (path === '/onboarding/career-path' && token.careerPath) {
-        const surveyPath = token.careerPath === 'SHORT_COURSE'
-          ? '/onboarding/short-course/survey'
-          : '/onboarding/degree-program/survey';
-        return NextResponse.redirect(new URL(surveyPath, req.url));
+      // Allow access to career path selection if not yet selected
+      if (path === '/onboarding/career-path' && !token.careerPath) {
+        return NextResponse.next();
       }
 
-      // Verify proper onboarding flow
-      if (token.careerPath === 'SHORT_COURSE' && path.startsWith('/onboarding/degree-program')) {
-        return NextResponse.redirect(new URL('/onboarding/short-course/survey', req.url));
+      // Ensure career path is selected before accessing other onboarding steps
+      if (!token.careerPath) {
+        return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
       }
 
-      if (token.careerPath === 'DEGREE_PROGRAM' && path.startsWith('/onboarding/short-course')) {
-        return NextResponse.redirect(new URL('/onboarding/degree-program/survey', req.url));
+      // Get current onboarding flow based on career path
+      const currentFlow = ONBOARDING_FLOWS[token.careerPath as CareerPath];
+
+      // Find current step in the flow
+      const currentStepEntry = Object.entries(currentFlow).find(([_, routePath]) => 
+        path.startsWith(routePath)
+      );
+
+      if (!currentStepEntry) {
+        // If path is not in flow, redirect to appropriate step
+        return NextResponse.redirect(
+          new URL(currentFlow[token.currentStep as OnboardingStep] || '/onboarding/career-path', req.url)
+        );
       }
 
+      // Allow proceeding to current step
       return NextResponse.next();
-    }
-
-    // Handle auth pages (login/register)
-    if (token && (path.startsWith('/login') || path.startsWith('/register'))) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
     // Handle dashboard access
@@ -57,6 +90,11 @@ export default withAuth(
       }
     }
 
+    // Handle auth pages (login/register)
+    if (token && (path.startsWith('/login') || path.startsWith('/register'))) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
     return NextResponse.next();
   },
   {
@@ -64,14 +102,17 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
         
-        if (
-          path === '/' || 
-          path.startsWith('/login') || 
-          path.startsWith('/register') ||
-          path.startsWith('/public') ||
-          path.startsWith('/_next') ||
-          path.startsWith('/api/auth')
-        ) {
+        // Public paths that don't require authentication
+        const publicPaths = [
+          '/',
+          '/login',
+          '/register',
+          '/public',
+          '/_next',
+          '/api/auth'
+        ];
+
+        if (publicPaths.some(route => path.startsWith(route))) {
           return true;
         }
 
