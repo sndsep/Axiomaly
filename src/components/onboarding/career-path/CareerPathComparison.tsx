@@ -113,23 +113,34 @@ export function CareerPathComparison() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/user/career-path', {
+      const response = await fetch('/api/onboarding/career-path', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ type: path }),
       });
 
-      if (!response.ok) throw new Error('Failed to save career path');
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to save career path');
+      }
+
+      // Debugging Log
+      console.log('Redirecting to:', path === 'SHORT_COURSE' 
+        ? '/onboarding/short-course/survey'
+        : '/onboarding/degree-program/survey');
 
       // Redirect based on selected path
       router.push(path === 'SHORT_COURSE' 
         ? '/onboarding/short-course/survey'
         : '/onboarding/degree-program/survey'
       );
+      console.log('Redirect called');
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save your selection. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save your selection. Please try again.",
         variant: "destructive",
       });
       setIsSubmitting(false);

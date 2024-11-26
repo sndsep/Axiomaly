@@ -8,13 +8,15 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/forms/card';
 import { Badge } from '@/components/ui/forms/badge';
 import { Button } from '@/components/ui/forms/button';
+ // Start of Selection
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/forms/tabs';
 import { useToast } from '@/components/ui/hooks/use-toast';
-import { OnboardingLayout } from '../common/OnboardingLayout';
-import { ProgressBar } from '../common/ProgressBar';
+import { OnboardingLayout } from '@/components/onboarding/common/OnboardingLayout';
+import { ProgressBar } from '@/components/onboarding/common/ProgressBar';
 import { 
   Briefcase,
   Code,
+} from 'lucide-react';
   Book,
   Users,
   Play,

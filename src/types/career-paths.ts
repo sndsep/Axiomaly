@@ -1,22 +1,23 @@
 // src/types/career-paths.ts
+export type CareerPathType = 'SHORT_COURSE' | 'DEGREE_PROGRAM';
 
 export interface CareerPathFeature {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
 }
 
-export interface CareerPathOption {
-  type: CareerPath;
+export interface CareerPath {
+  type: CareerPathType;
   title: string;
   description: string;
-  duration: string;
   features: CareerPathFeature[];
-  outcomes: string[];
-  requirements?: string[];
+  icon: React.ReactNode;
+  color: string;
 }
 
-export interface PathSelection {
-  selectedPath: CareerPath;
-  timestamp: Date;
+export interface CareerPathResponse {
+  type: CareerPathType;
+  nextStep: string;
+  error?: string;
 }

@@ -1,4 +1,4 @@
-// File: /Volumes/DockDisk/10 PROJECTS/axiomaly-new/src/app/api/onboarding/accept-curriculum/route.ts
+// File: /Volumes/DockDisk/10 PROJECTS/Axiomaly/src/app/api/onboarding/accept-curriculum/route.ts
 import * as entry from '../../../../../../src/app/api/onboarding/accept-curriculum/route.js'
 import type { NextRequest } from 'next/server.js'
 

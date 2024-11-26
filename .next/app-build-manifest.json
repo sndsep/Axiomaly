@@ -1,19 +1,9 @@
 {
   "pages": {
-    "/(auth)/onboarding/tour/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/tour/page.js"
-    ],
-    "/(auth)/onboarding/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/layout.js"
-    ],
-    "/(auth)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/layout.js"
+      "static/chunks/app/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -36,15 +26,35 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
+    "/(auth)/register/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/register/page.js"
+    ],
+    "/(auth)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/layout.js"
+    ],
+    "/(auth)/onboarding/career-path/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/career-path/page.js"
+    ],
+    "/(auth)/onboarding/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/onboarding/layout.js"
+    ],
+    "/(auth)/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/login/page.js"
+    ],
     "/(auth)/onboarding/degree-program/survey/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/degree-program/survey/page.js"
-    ],
-    "/(auth)/onboarding/profile/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/profile/page.js"
     ],
     "/(auth)/onboarding/degree-program/curriculum/page": [
       "static/chunks/webpack.js",
@@ -56,10 +66,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/degree-program/curriculum/loading.js"
     ],
-    "/(auth)/onboarding/career-path/page": [
+    "/(auth)/onboarding/profile/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/onboarding/career-path/page.js"
+      "static/chunks/app/(auth)/onboarding/profile/page.js"
     ]
   }
 }

@@ -1,4 +1,4 @@
-// File: /Volumes/DockDisk/10 PROJECTS/axiomaly-new/src/app/(auth)/[...nextauth]/route.ts
+// File: /Volumes/DockDisk/10 PROJECTS/Axiomaly/src/app/(auth)/[...nextauth]/route.ts
 import * as entry from '../../../../../src/app/(auth)/[...nextauth]/route.js'
 import type { NextRequest } from 'next/server.js'
 

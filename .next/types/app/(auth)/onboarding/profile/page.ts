@@ -1,4 +1,4 @@
-// File: /Volumes/DockDisk/10 PROJECTS/axiomaly-new/src/app/(auth)/onboarding/profile/page.tsx
+// File: /Volumes/DockDisk/10 PROJECTS/Axiomaly/src/app/(auth)/onboarding/profile/page.tsx
 import * as entry from '../../../../../../src/app/(auth)/onboarding/profile/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

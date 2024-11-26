@@ -1,69 +1,83 @@
 // src/app/api/onboarding/career-path/route.ts
-    // Start of Selection
-    import { prisma } from "@/lib/db";
-    import { getServerSession } from "next-auth/next";
-    import { authOptions } from "@/lib/auth";
-    import { NextResponse } from "next/server";
+// This API route handles the selection of a career path for onboarding
+// It updates the user's career path and onboarding progress
+// It returns the updated career path
+// It also handles errors and returns appropriate responses for errors
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/db"
+
+export async function POST(req: Request) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ 
+        success: false,
+        error: "Not authenticated" 
+      }, { 
+        status: 401 
+      })
+    }
+
+    // Parse request body
+    const body = await req.json()
+    const type = body.type
     
-    export async function POST(req: Request) {
-      try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Validate type
+    if (!type || !['SHORT_COURSE', 'DEGREE_PROGRAM'].includes(type)) {
+      return NextResponse.json({ 
+        success: false,
+        error: "Invalid career path type" 
+      }, { 
+        status: 400 
+      })
     }
 
-    const data = await req.json();
-    const { type } = data;
-
-    // Check if the user exists
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Check if OnboardingProgress exists
-    const onboardingProgress = await prisma.onboardingProgress.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!onboardingProgress) {
-      // Create OnboardingProgress if it doesn't exist
-      await prisma.onboardingProgress.create({
-        data: {
-          userId: session.user.id,
-          currentStep: "CAREER_PATH", // Set initial step
-          completed: false,
-          responses: {},
-        },
-      });
-    }
-
-    // Now update the user and onboarding progress
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+    // Update user career path
+    await prisma.user.update({
+      where: { 
+        email: session.user.email 
+      },
       data: {
         careerPath: type,
         onboardingProgress: {
-          update: {
-            currentStep: "SURVEY",
-            responses: {
-              careerPath: type,
-              selectedAt: new Date().toISOString(),
+          upsert: {
+            create: {
+              currentStep: "SURVEY",
+              completed: false,
+              responses: {}
             },
-          },
-        },
-      },
-      include: {
-        onboardingProgress: true,
-      },
-    });
+            update: {
+              currentStep: "SURVEY"
+            }
+          }
+        }
+      }
+    })
 
-    return NextResponse.json(updatedUser);
+    // Define next route based on type
+    const nextRoute = type === 'SHORT_COURSE' 
+      ? '/onboarding/short-course/survey'
+      : '/onboarding/degree-program/survey'
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        careerPath: type,
+        nextRoute
+      }
+    })
+
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("Career path selection error:", error)
+    
+    return NextResponse.json({
+      success: false,
+      error: "Failed to save career path"
+    }, {
+      status: 500
+    })
   }
 }

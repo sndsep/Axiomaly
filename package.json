@@ -13,7 +13,10 @@
     "audit:fix": "npm audit fix",
     "type-check": "tsc --noEmit",
     "seed": "node prisma/seed.js",
-    "postinstall": "npm audit fix"
+    "postinstall": "npm audit fix",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "chromatic": "npx chromatic --project-token=chpt_03fae28fe72a042"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.3",
@@ -55,6 +58,14 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.2",
+    "@storybook/addon-essentials": "^8.4.5",
+    "@storybook/addon-interactions": "^8.4.5",
+    "@storybook/addon-onboarding": "^8.4.5",
+    "@storybook/blocks": "^8.4.5",
+    "@storybook/nextjs": "^8.4.5",
+    "@storybook/react": "^8.4.5",
+    "@storybook/test": "^8.4.5",
     "@types/node": "^20.11.5",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
@@ -62,13 +73,18 @@
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "autoprefixer": "^10.4.17",
+    "chromatic": "^11.18.1",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-storybook": "^0.11.1",
     "postcss": "^8.4.33",
+    "storybook": "^8.4.5",
+    "storybook-addon-designs": "^6.3.1",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.7.2"
   },
   "overrides": {
     "semver": "^7.5.4"
@@ -76,5 +92,10 @@
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "prisma": {
     "seed": "node prisma/seed.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
   }
 }
