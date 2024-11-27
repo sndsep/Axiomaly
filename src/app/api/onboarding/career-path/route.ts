@@ -3,6 +3,7 @@
 // It updates the user's career path and onboarding progress
 // It returns the updated career path
 // It also handles errors and returns appropriate responses for errors
+
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"

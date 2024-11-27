@@ -1,5 +1,9 @@
 {
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/(auth)/onboarding/profile/page": "app/(auth)/onboarding/profile/page.js",
-  "/(auth)/onboarding/degree-program/curriculum/page": "app/(auth)/onboarding/degree-program/curriculum/page.js"
+  "/api/onboarding/profile/route": "app/api/onboarding/profile/route.js",
+  "/api/onboarding/complete/route": "app/api/onboarding/complete/route.js",
+  "/(auth)/[...nextauth]/route": "app/(auth)/[...nextauth]/route.js",
+  "/(authenticated)/dashboard/page": "app/(authenticated)/dashboard/page.js",
+  "/(auth)/onboarding/tour/page": "app/(auth)/onboarding/tour/page.js",
+  "/(auth)/onboarding/profile/page": "app/(auth)/onboarding/profile/page.js"
 }

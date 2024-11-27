@@ -35,96 +35,31 @@ function getNextStep(currentStep: OnboardingStep, careerPath: CareerPath): strin
 
 export default withAuth(
   async function middleware(req: NextRequestWithAuth) {
-    const path = req.nextUrl.pathname;
-    const token = req.nextauth.token;
+    const path = req.nextUrl.pathname
+    const token = req.nextauth.token
 
-    // Handle onboarding flow
     if (path.startsWith('/onboarding/')) {
-      // Authentication check
-      if (!token) {
-        return NextResponse.redirect(new URL('/login', req.url));
+      if (path === '/onboarding/career-path') {
+        return NextResponse.next()
       }
 
-      // Redirect completed onboarding to dashboard
-      if (token.hasCompletedOnboarding) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
-      }
+      const currentStep = token?.user?.onboardingProgress?.currentStep
+      const careerPath = token?.user?.careerPath
 
-      // Allow access to career path selection if not yet selected
-      if (path === '/onboarding/career-path' && !token.careerPath) {
-        return NextResponse.next();
-      }
+      if (currentStep === 'SURVEY') {
+        const correctPath = careerPath === 'SHORT_COURSE'
+          ? '/onboarding/short-course/survey'
+          : '/onboarding/degree-program/survey'
 
-      // Ensure career path is selected before accessing other onboarding steps
-      if (!token.careerPath) {
-        return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
-      }
-
-      // Get current onboarding flow based on career path
-      const currentFlow = ONBOARDING_FLOWS[token.careerPath as CareerPath];
-
-      // Find current step in the flow
-      const currentStepEntry = Object.entries(currentFlow).find(([_, routePath]) => 
-        path.startsWith(routePath)
-      );
-
-      if (!currentStepEntry) {
-        // If path is not in flow, redirect to appropriate step
-        return NextResponse.redirect(
-          new URL(currentFlow[token.currentStep as OnboardingStep] || '/onboarding/career-path', req.url)
-        );
-      }
-
-      // Allow proceeding to current step
-      return NextResponse.next();
-    }
-
-    // Handle dashboard access
-    if (path.startsWith('/dashboard')) {
-      if (!token) {
-        return NextResponse.redirect(new URL('/login', req.url));
-      }
-
-      if (!token.hasCompletedOnboarding) {
-        return NextResponse.redirect(new URL('/onboarding/career-path', req.url));
-      }
-    }
-
-    // Handle auth pages (login/register)
-    if (token && (path.startsWith('/login') || path.startsWith('/register'))) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const path = req.nextUrl.pathname;
-        
-        // Public paths that don't require authentication
-        const publicPaths = [
-          '/',
-          '/login',
-          '/register',
-          '/public',
-          '/_next',
-          '/api/auth'
-        ];
-
-        if (publicPaths.some(route => path.startsWith(route))) {
-          return true;
+        if (path !== correctPath) {
+          return NextResponse.redirect(new URL(correctPath, req.url))
         }
+      }
+    }
 
-        return !!token;
-      },
-    },
-    pages: {
-      signIn: '/login',
-      error: '/error',
-    },
+    return NextResponse.next()
   }
-);
+)
 
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],

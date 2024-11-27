@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from "next-auth/react";
 import { Button } from '@/components/ui/forms/button';
 import { Badge } from '@/components/ui/forms/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/forms/tabs';
@@ -88,6 +89,7 @@ const TermCard = ({ term, courses, milestone }: CurriculumModule) => {
 
 export default function Curriculum() {
   const router = useRouter();
+  const { data: session, update } = useSession();
   const { toast } = useToast();
   const [isAccepting, setIsAccepting] = useState(false);
   const selectedSpecialization = 'your_specialization_value';
@@ -115,21 +117,28 @@ export default function Curriculum() {
       const response = await fetch('/api/onboarding/accept-curriculum', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accepted: true, specialization: selectedSpecialization }),
+        body: JSON.stringify({ 
+          accepted: true, 
+          specialization: selectedSpecialization 
+        }),
       });
-  
+
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save curriculum acceptance');
+        throw new Error(data.error || 'Failed to save curriculum acceptance');
       }
-  
+
       toast({
         title: "Curriculum plan accepted!",
         description: "Let's continue with your profile setup.",
       });
-  
-      router.push('/onboarding/profile');
-  
+
+      // Forzar una redirección completa
+      setTimeout(() => {
+        window.location.replace('/onboarding/profile');
+      }, 100);
+
     } catch (error) {
       console.error('Error accepting curriculum:', error);
       toast({
