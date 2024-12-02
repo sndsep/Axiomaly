@@ -1,4 +1,4 @@
-import { Providers } from '@/components/providers/root-provider';
+import { Providers } from '@/components/providers/Providers';
 import './globals.css';
 import { OnboardingProvider } from '@/contexts/onboarding-context';
 

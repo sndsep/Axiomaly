@@ -1,10 +1,10 @@
-import { CourseDashboard } from '@/components/dashboard/courses/course-dashboard';
+import CourseDashboard from '@/components/dashboard/CourseDashboard'
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Courses</h1>
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-6">My Courses</h1>
       <CourseDashboard />
     </div>
-  );
+  )
 }

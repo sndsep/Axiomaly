@@ -1,4 +1,6 @@
 // src/types/curriculum.ts
+export * from '@prisma/client'
+
 export interface Course {
   id: string;
   title: string;

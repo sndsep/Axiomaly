@@ -1,32 +1,32 @@
 // src/types/courses.ts
+import { Prisma } from '@prisma/client'
 
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  prerequisites?: string[];
-  skills: string[];
-  thumbnail?: string;
-  instructor: {
-    id: string;
-    name: string;
-    avatar?: string;
+export type CourseWithRelations = Prisma.CourseGetPayload<{
+  include: {
+    instructor: true;
+    category: true;
+    resources: true;
+    _count: {
+      select: { enrollments: true; resources: true; curricula: true };
+    };
   };
-  rating?: number;
-  enrolledStudents?: number;
+}>;
+
+export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+
+export interface CourseFilters {
+  search?: string
+  level?: CourseLevel
+  category?: string
 }
 
-export interface CourseRecommendation extends Course {
-  matchPercentage: number;
-  matchedInterests: string[];
-  startDate?: Date;
-}
-
-export interface CourseFilter {
-  level?: string[];
-  duration?: string[];
-  skills?: string[];
-  searchTerm?: string;
+export interface CourseCreateInput {
+  title: string
+  description?: string
+  thumbnail?: string
+  duration?: string
+  price?: number
+  level: string
+  categoryId?: string
+  instructorId: string
 }

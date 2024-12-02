@@ -12,12 +12,12 @@ async function cleanDatabase() {
   await prisma.curriculum.deleteMany()
   await prisma.specialization.deleteMany()
   await prisma.studentProgress.deleteMany()
-  await prisma.enrollment.deleteMany()
+  await prisma.enrollment.deleteMany() // This now includes the progress
   await prisma.surveyResponse.deleteMany()
   await prisma.resource.deleteMany()
+  await prisma.lesson.deleteMany()
   await prisma.course.deleteMany()
   await prisma.category.deleteMany()
-  await prisma.lesson.deleteMany()
   await prisma.onboardingProgress.deleteMany()
   await prisma.userPreferences.deleteMany()
   await prisma.session.deleteMany()
@@ -58,14 +58,6 @@ async function main() {
   })
   console.log('👨‍🏫 Instructor created')
 
-  // Create test lesson
-  const lesson = await prisma.lesson.create({
-    data: {
-      title: 'Introduction to VFX',
-    }
-  })
-  console.log('📚 Lesson created')
-
   // Create categories
   const categories = await Promise.all([
     prisma.category.create({ data: { name: '3D Modeling' } }),
@@ -95,16 +87,20 @@ async function main() {
         description: 'Specialize in effects and technical aspects'
       }
     })
-  ]);
+  ])
   console.log('🎯 Specializations created')
 
-  // Define courses
+  // Create courses with lessons
   const coursesData = [
     {
       title: "Fundamentals of 3D Modeling",
       description: "Learn the basics of 3D modeling with industry-standard tools",
+      thumbnail: "/api/placeholder/800/600",
+      duration: "12 weeks",
+      level: "BEGINNER",
       categoryId: categories[0].id,
       instructorId: instructor.id,
+      price: 999.99,
       resources: {
         create: [
           {
@@ -113,19 +109,59 @@ async function main() {
             url: "/resources/materials.pdf"
           }
         ]
+      },
+      lessons: {
+        create: [
+          {
+            title: "Introduction to 3D Fundamentals",
+            description: "Learn the basic concepts of 3D modeling",
+            content: "Detailed lesson content here...",
+            duration: 60,
+            order: 1,
+          },
+          {
+            title: "Basic Modeling Tools",
+            description: "Master the essential modeling tools",
+            content: "Detailed lesson content here...",
+            duration: 90,
+            order: 2,
+          }
+        ]
       }
     },
     {
       title: "Advanced Animation Techniques",
       description: "Master character animation and motion dynamics",
+      thumbnail: "/api/placeholder/800/600",
+      duration: "16 weeks",
+      level: "ADVANCED",
       categoryId: categories[1].id,
       instructorId: instructor.id,
+      price: 1499.99,
       resources: {
         create: [
           {
             title: "Animation Reference Library",
             description: "Collection of animation references",
             url: "/resources/animation-refs.zip"
+          }
+        ]
+      },
+      lessons: {
+        create: [
+          {
+            title: "Advanced Character Animation",
+            description: "Master character animation principles",
+            content: "Detailed lesson content here...",
+            duration: 120,
+            order: 1,
+          },
+          {
+            title: "Motion Dynamics & Physics",
+            description: "Learn realistic motion and physics simulation",
+            content: "Detailed lesson content here...",
+            duration: 150,
+            order: 2,
           }
         ]
       }
@@ -136,21 +172,9 @@ async function main() {
   const courses = await Promise.all(
     coursesData.map(courseData => 
       prisma.course.create({
-        data: {
-          title: "Fundamentals of 3D Modeling",
-          description: "Learn the basics of 3D modeling with industry-standard tools",
-          categoryId: "cm3q2syz00004q6eg97c5vgtw",
-          instructorId: "cm3q2syyw0002q6egkjf2d959",
-          resources: {
-            create: [
-              {
-                title: "Course Materials",
-                description: "Essential resources for the course",
-                url: "/resources/materials.pdf"
-              }
-            ]
-          },
-          level: "BEGINNER"
+        data: courseData,
+        include: {
+          lessons: true
         }
       })
     )
@@ -183,7 +207,7 @@ async function main() {
         }
       }
     })
-  ]);
+  ])
   console.log('📋 Curricula created')
 
   // Create prerequisites
@@ -193,7 +217,7 @@ async function main() {
       courseId: courses[0].id,
       required: true
     }
-  });
+  })
   console.log('🔄 Prerequisites created')
 
   // Create test student
@@ -204,13 +228,6 @@ async function main() {
       hashedPassword: await bcrypt.hash('student123', 12),
       role: 'STUDENT',
       careerPath: 'DEGREE_PROGRAM',
-      enrollments: {
-        create: courses.map(course => ({
-          courseId: course.id,
-          lessonId: lesson.id,
-          status: 'ACTIVE',
-        }))
-      },
       activities: {
         create: [
           {
@@ -236,9 +253,42 @@ async function main() {
   })
   console.log('🎓 Student created')
 
-  // Create progress records
-  await Promise.all(courses.map(course => 
-    prisma.studentProgress.create({
+  // Create enrollments
+  await Promise.all(courses.map(async course => {
+    // Create enrollment
+    await prisma.enrollment.create({
+      data: {
+        userId: student.id,
+        courseId: course.id,
+        status: 'ACTIVE',
+        progress: 0,
+        enrolledAt: new Date(),
+        lessons: {
+          connect: course.lessons.map(lesson => ({ id: lesson.id }))
+        }
+      }
+    })
+       // Create lesson progress for each lesson
+       await Promise.all(course.lessons.map(lesson => 
+        prisma.lessonProgress.create({
+          data: {
+            enrollment: {
+              connect: {
+                userId_courseId: {
+                  userId: student.id,
+                  courseId: course.id
+                }
+              }
+            },
+            lesson: {
+              connect: { id: lesson.id }
+            }
+          }
+        })
+      ))
+
+    // Create student progress
+    await prisma.studentProgress.create({
       data: {
         userId: student.id,
         courseId: course.id,
@@ -246,8 +296,17 @@ async function main() {
         lastUpdated: new Date(),
       }
     })
-  ))
-  console.log('📊 Progress records created')
+    // Create review
+    await prisma.review.create({
+      data: {
+        rating: 4,
+        comment: "Great course content and structure!",
+        userId: student.id,
+        courseId: course.id
+      }
+    })
+  }))
+  console.log('📊 Enrollments, progress records and reviews created')
 
   console.log('✅ Seed completed successfully!')
 }

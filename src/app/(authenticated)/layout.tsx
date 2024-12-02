@@ -3,40 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { UserNav } from "@/components/navigation/user-nav";
+import { RoleSidebar } from "@/components/dashboard/layout/sidebar/role-sidebar";
 import Link from "next/link";
-
-interface NavItem {
-  title: string;
-  href: string;
-  icon?: React.ComponentType<{ className?: string }>;
-}
-
-const sidebarNavItems: NavItem[] = [
-  {
-    title: "Home",
-    href: "/dashboard",
-  },
-  {
-    title: "Courses",
-    href: "/dashboard/courses",
-  },
-  {
-    title: "Calendar",
-    href: "/dashboard/calendar",
-  },
-  {
-    title: "Messages",
-    href: "/dashboard/messages",
-  },
-  {
-    title: "Portfolio",
-    href: "/dashboard/portfolio",
-  },
-  {
-    title: "Profile",
-    href: "/dashboard/profile",
-  },
-]
 
 export default async function AuthenticatedLayout({
   children,
@@ -48,6 +16,12 @@ export default async function AuthenticatedLayout({
   if (!session?.user) {
     redirect("/login");
   }
+
+  console.log("AuthenticatedLayout - Session:", {
+    user: session.user,
+    email: session.user.email,
+    id: session.user.id
+  });
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -90,17 +64,7 @@ export default async function AuthenticatedLayout({
       <div className="flex-1 flex container mx-auto p-4">
         {/* Sidebar */}
         <aside className="hidden md:flex w-64 flex-col border-r bg-muted/40">
-          <nav className="flex-1 space-y-1 p-4">
-            {sidebarNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted"
-              >
-                {item.title}
-              </Link>
-            ))}
-          </nav>
+          <RoleSidebar />
         </aside>
 
         {/* Content */}

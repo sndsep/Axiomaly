@@ -1,4 +1,5 @@
 // prisma/schema.prisma
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -29,34 +30,39 @@ enum OnboardingStep {
   COMPLETED
 }
 
-
 enum EnrollmentStatus {
   ACTIVE
   COMPLETED
   DROPPED
 }
 
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
 model SurveyResponse {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
   // Common fields for both paths
   experienceLevel String
-  interests       String[]  @default([])
+  interests       String[] @default([])
   weeklyHours     Int
-  goals           String[]  @default([])
-  
+  goals           String[] @default([])
+
   // Degree program specific fields
-  specializations String[]  @default([])
-  careerGoals     String[]  @default([])
+  specializations String[] @default([])
+  careerGoals     String[] @default([])
   timeCommitment  Int?
   priorEducation  String?
   portfolioUrl    String?
-  
-  careerPath      CareerPath
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+
+  careerPath CareerPath
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model Account {
@@ -87,29 +93,30 @@ model Session {
 }
 
 model User {
-  id                    String         @id @default(cuid())
-  name                  String?
-  displayName           String?
-  email                 String?        @unique
-  emailVerified        DateTime?
-  bio                   String?
-  image                String?
-  location              String?
-  socials               Json?
-  hashedPassword       String?
-  role                 Role           @default(STUDENT)
-  careerPath           CareerPath?    
-  hasCompletedOnboarding Boolean       @default(false)
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  id                     String      @id @default(cuid())
+  name                   String?
+  displayName            String?
+  email                  String?     @unique
+  emailVerified          DateTime?
+  bio                    String?
+  image                  String?
+  location               String?
+  socials                Json?
+  hashedPassword         String?
+  role                   Role        @default(STUDENT)
+  careerPath             CareerPath?
+  hasCompletedOnboarding Boolean     @default(false)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
 
   // Relations
   accounts           Account[]
   sessions           Session[]
-  taughtCourses      Course[]         @relation("InstructorCourses")
+  taughtCourses      Course[]            @relation("InstructorCourses")
   progress           StudentProgress[]
   activities         Activity[]
   enrollments        Enrollment[]
+  reviews            Review[]
   preferences        UserPreferences?
   onboardingProgress OnboardingProgress?
   deadlines          Deadline[]
@@ -117,21 +124,31 @@ model User {
 }
 
 model Course {
-  id            String        @id @default(cuid())
-  title         String
-  description   String?
-  instructor    User          @relation("InstructorCourses", fields: [instructorId], references: [id])
-  instructorId  String
-  category      Category?     @relation(fields: [categoryId], references: [id])
-  categoryId    String?
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  thumbnail    String?
+  duration     String?
+  price        Decimal?
+  level        String
+  instructorId String
+  categoryId   String?
+
+  // Relations
+  instructor    User              @relation("InstructorCourses", fields: [instructorId], references: [id])
+  category      Category?         @relation(fields: [categoryId], references: [id])
   curricula     Curriculum[]
   prerequisites Prerequisite[]
-  enrollments   Enrollment[]  @relation("CourseEnrollments")
+  enrollments   Enrollment[]      @relation("CourseEnrollments")
   progress      StudentProgress[]
   resources     Resource[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  level         String
+  lessons       Lesson[]
+  reviews       Review[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([categoryId])
+  @@index([instructorId])
 }
 
 model Category {
@@ -151,8 +168,8 @@ model Resource {
   courseId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  course      Course   @relation(fields: [courseId], references: [id])
+
+  course Course @relation(fields: [courseId], references: [id])
 }
 
 model StudentProgress {
@@ -161,9 +178,9 @@ model StudentProgress {
   courseId    String
   progress    Int      @default(0)
   lastUpdated DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id])
-  course      Course   @relation(fields: [courseId], references: [id])
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -175,72 +192,115 @@ model Activity {
   description String
   createdAt   DateTime @default(now())
   userId      String
-  
-  user        User     @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Enrollment {
+  id          String           @id @default(cuid())
+  userId      String
+  courseId    String
+  status      EnrollmentStatus @default(ACTIVE)
+  progress    Float            @default(0)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  user           User             @relation(fields: [userId], references: [id])
+  course         Course           @relation("CourseEnrollments", fields: [courseId], references: [id])
+  lessons        Lesson[]         @relation("LessonEnrollments")
+  lessonProgress LessonProgress[]
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Review {
   id        String   @id @default(cuid())
+  rating    Int
+  comment   String?  @db.Text
   userId    String
   courseId  String
-  status    EnrollmentStatus @default(ACTIVE)
-  lessonId  String
-  completed Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  progress  Float    @default(0)
-  
-  user      User     @relation(fields: [userId], references: [id])
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
-  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id])
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 
   @@index([userId])
   @@index([courseId])
-  @@unique([userId, courseId])
 }
 
 model Lesson {
-  id          String     @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
-  enrollments Enrollment[]
+  description String?
+  content     String?  @db.Text
+  duration    Int? // in minutes
+  order       Int      @default(0)
+  courseId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  course      Course           @relation(fields: [courseId], references: [id])
+  enrollments Enrollment[]     @relation("LessonEnrollments")
+  progress    LessonProgress[]
+
+  @@unique([courseId, order])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id           String    @id @default(cuid())
+  lessonId     String
+  enrollmentId String
+  completed    Boolean   @default(false)
+  completedAt  DateTime?
+
+  lesson     Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, enrollmentId])
+  @@index([lessonId])
+  @@index([enrollmentId])
 }
 
 model UserPreferences {
-  id                  String   @id @default(cuid())
-  userId              String   @unique
-  weeklyGoal          Int?     // Hours per week for learning
-  learningPath        String?  // Specific focus area or specialization
-  timezone            String?  // User's timezone for scheduling
-  emailNotifications  Boolean  @default(true)
-  marketingEmails     Boolean  @default(true)
-  courseUpdates       Boolean  @default(true)
-  preferredTags       String[] @default([])
-  portfolio           String?  // Portfolio URL
-  linkedin            String?
-  twitter             String?
-  
-  user                User     @relation(fields: [userId], references: [id])
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  weeklyGoal         Int? // Hours per week for learning
+  learningPath       String? // Specific focus area or specialization
+  timezone           String? // User's timezone for scheduling
+  emailNotifications Boolean  @default(true)
+  marketingEmails    Boolean  @default(true)
+  courseUpdates      Boolean  @default(true)
+  preferredTags      String[] @default([])
+  portfolio          String? // Portfolio URL
+  linkedin           String?
+  twitter            String?
+
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
 model OnboardingProgress {
-  id                    String   @id @default(cuid())
-  userId               String   @unique
-  currentStep          OnboardingStep @default(CAREER_PATH)
-  completed            Boolean  @default(false)
-  responses            Json?    // Store onboarding responses
-  selectedCourse       String?  // For short course path
-  viewedRecommendations Boolean @default(false)
-  acceptedCurriculum   Boolean @default(false)
-  selectedSpecializations String[] @default([])
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  
-  user                User     @relation(fields: [userId], references: [id])
+  id                      String         @id @default(cuid())
+  userId                  String         @unique
+  currentStep             OnboardingStep @default(CAREER_PATH)
+  completed               Boolean        @default(false)
+  responses               Json? // Store onboarding responses
+  selectedCourse          String? // For short course path
+  viewedRecommendations   Boolean        @default(false)
+  acceptedCurriculum      Boolean        @default(false)
+  selectedSpecializations String[]       @default([])
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Deadline {
@@ -249,12 +309,12 @@ model Deadline {
   dueDate   DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  user      User     @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Curriculum {
-  id               String          @id @default(cuid()) 
+  id               String          @id @default(cuid())
   title            String
   description      String?
   difficultyLevel  ExperienceLevel @default(BEGINNER)
@@ -263,9 +323,9 @@ model Curriculum {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
-  specialization   Specialization  @relation(fields: [specializationId], references: [id])
-  courses          Course[]
-  prerequisites    Prerequisite[]
+  specialization Specialization @relation(fields: [specializationId], references: [id])
+  courses        Course[]
+  prerequisites  Prerequisite[]
 }
 
 model Specialization {
@@ -276,16 +336,11 @@ model Specialization {
 }
 
 model Prerequisite {
-  id           String     @id @default(cuid())
+  id           String  @id @default(cuid())
   curriculumId String
   courseId     String
-  required     Boolean    @default(true)
-  curriculum   Curriculum @relation(fields: [curriculumId], references: [id])
-  course       Course     @relation(fields: [courseId], references: [id])
-}
+  required     Boolean @default(true)
 
-enum ExperienceLevel {
-  BEGINNER
-  INTERMEDIATE 
-  ADVANCED
+  curriculum Curriculum @relation(fields: [curriculumId], references: [id])
+  course     Course     @relation(fields: [courseId], references: [id])
 }

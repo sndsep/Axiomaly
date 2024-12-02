@@ -41,13 +41,14 @@ export default withAuth(
     if (path.startsWith('/onboarding/')) {
       if (path === '/onboarding/career-path') {
         return NextResponse.next()
-      }
+          // Start of Selection
+          }
 
-      const currentStep = token?.user?.onboardingProgress?.currentStep
-      const careerPath = token?.user?.careerPath
+          const currentStep = (token?.user as { onboardingProgress?: { currentStep?: string }, careerPath?: string })?.onboardingProgress?.currentStep
+          const careerPath = (token?.user as { careerPath?: string })?.careerPath
 
-      if (currentStep === 'SURVEY') {
-        const correctPath = careerPath === 'SHORT_COURSE'
+          if (currentStep === 'SURVEY') {
+            const correctPath = careerPath === 'SHORT_COURSE'
           ? '/onboarding/short-course/survey'
           : '/onboarding/degree-program/survey'
 
@@ -62,5 +63,7 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|uploads|login|register|auth).*)',
+  ],
 };

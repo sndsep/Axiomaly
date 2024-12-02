@@ -1,59 +1,58 @@
-import { useState } from 'react'
-import { useToast } from '@/components/ui/hooks/use-toast'
-import { useRouter } from 'next/navigation'
+// src/hooks/use-course-enrollment.ts
 
-interface UseEnrollmentOptions {
-  onSuccess?: (courseId: string) => void
-  onError?: (error: Error) => void
-}
-
-export function useCourseEnrollment(options: UseEnrollmentOptions = {}) {
-  const [isEnrolling, setIsEnrolling] = useState(false)
+export function useCourseEnrollment(courseId: string) {
+  const [isEnrolled, setIsEnrolled] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
-  const router = useRouter()
 
-  const enrollInCourse = async (courseId: string) => {
-    setIsEnrolling(true)
+  const checkEnrollmentStatus = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/courses/${courseId}/enrollment`)
+      if (!response.ok) throw new Error('Failed to check enrollment status')
+      
+      const data = await response.json()
+      setIsEnrolled(data.isEnrolled)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to check enrollment')
+    }
+  }, [courseId])
+
+  const enrollInCourse = useCallback(async () => {
+    setIsLoading(true)
     try {
       const response = await fetch(`/api/courses/${courseId}/enroll`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
       })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to enroll in course')
-      }
-
-      const data = await response.json()
       
+      if (!response.ok) throw new Error('Failed to enroll in course')
+      
+      setIsEnrolled(true)
       toast({
-        title: "¡Inscripción exitosa!",
-        description: "Has sido inscrito en el curso correctamente."
+        title: "Success",
+        description: "Successfully enrolled in course",
       })
-
-      options.onSuccess?.(courseId)
-      router.refresh()
-      
-      return data
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Error al inscribirse en el curso')
-      
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to enroll in course'
       toast({
+        title: "Error",
+        description: message,
         variant: "destructive",
-        title: "Error de inscripción",
-        description: err.message
       })
-      
-      options.onError?.(err)
       throw err
     } finally {
-      setIsEnrolling(false)
+      setIsLoading(false)
     }
-  }
+  }, [courseId, toast])
+
+  useEffect(() => {
+    checkEnrollmentStatus()
+  }, [checkEnrollmentStatus])
 
   return {
-    isEnrolling,
+    isEnrolled,
+    isLoading,
+    error,
     enrollInCourse
   }
 }

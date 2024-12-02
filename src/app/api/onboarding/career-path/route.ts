@@ -58,6 +58,16 @@ export async function POST(req: Request) {
       }
     })
 
+    // Actualizar la sesión con los nuevos datos
+    session.user = {
+      ...session.user,
+      careerPath: type,
+      onboardingProgress: {
+        ...session.user.onboardingProgress,
+        currentStep: "SURVEY"
+      }
+    }
+
     // Define next route based on type
     const nextRoute = type === 'SHORT_COURSE' 
       ? '/onboarding/short-course/survey'

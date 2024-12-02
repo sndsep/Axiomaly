@@ -1,16 +1,17 @@
-"use client"
-
 // File: src/components/dashboard/profile/avatar-upload.tsx
 // Component for handling avatar uploads
+
+"use client"
 
 import { useState, useRef } from "react"
 import { Camera, Loader2 } from "lucide-react"
 import { UserAvatar } from "@/components/ui/avatar/user-avatar"
 import { Button } from "@/components/ui/forms/button"
 import { toast } from "@/components/ui/hooks/use-toast"
+import { signOut, signIn } from "next-auth/react"
 
 interface AvatarUploadProps {
-  user: any // Replace with your user type
+  user: any
   onUploadComplete?: (imageUrl: string) => void
 }
 
@@ -22,14 +23,6 @@ export function AvatarUpload({ user, onUploadComplete }: AvatarUploadProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (!file.type.includes("image")) {
-      return toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
-        variant: "destructive",
-      })
-    }
-
     setIsUploading(true)
     const formData = new FormData()
     formData.append("avatar", file)
@@ -40,28 +33,42 @@ export function AvatarUpload({ user, onUploadComplete }: AvatarUploadProps) {
         body: formData,
       })
 
-      if (!response.ok) throw new Error("Failed to upload avatar")
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText)
+      }
 
       const data = await response.json()
-      onUploadComplete?.(data.image)
+      
+      // Forzar actualización de sesión
+      await signOut({ redirect: false });
+      await signIn('credentials', {
+        email: user.email,
+        redirect: false
+      });
+      
+      onUploadComplete?.(data.user.image)
       
       toast({
-        title: "Avatar updated",
-        description: "Your profile picture has been updated successfully.",
+        title: "Success",
+        description: "Your profile picture has been updated.",
       })
+
+      // Recargar la página después de un breve delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
+
     } catch (error) {
+      console.error("Upload error:", error)
       toast({
         title: "Error",
-        description: "Failed to update avatar. Please try again.",
+        description: error.message || "Failed to update profile picture. Please try again.",
         variant: "destructive",
       })
     } finally {
       setIsUploading(false)
     }
-  }
-
-  const handleUploadClick = () => {
-    inputRef.current?.click()
   }
 
   const handleRemoveAvatar = async () => {
@@ -72,6 +79,18 @@ export function AvatarUpload({ user, onUploadComplete }: AvatarUploadProps) {
       })
 
       if (!response.ok) throw new Error("Failed to remove avatar")
+
+      // Actualizar la sesión para quitar la imagen
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          image: null
+        }
+      })
+
+      // Forzar un refresh de la página para actualizar la sesión
+      window.location.reload()
 
       onUploadComplete?.("")
       
@@ -88,6 +107,10 @@ export function AvatarUpload({ user, onUploadComplete }: AvatarUploadProps) {
     } finally {
       setIsUploading(false)
     }
+  }
+
+  const handleUploadClick = () => {
+    inputRef.current?.click()
   }
 
   return (
