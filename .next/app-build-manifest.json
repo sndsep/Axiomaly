@@ -1,14 +1,14 @@
 {
   "pages": {
-    "/(auth)/login/page": [
+    "/(authenticated)/dashboard/courses/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/login/page.js"
+      "static/chunks/app/(authenticated)/dashboard/courses/page.js"
     ],
-    "/(auth)/layout": [
+    "/(authenticated)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/layout.js"
+      "static/chunks/app/(authenticated)/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -30,6 +30,21 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
+    ],
+    "/(authenticated)/dashboard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(authenticated)/dashboard/page.js"
+    ],
+    "/(auth)/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/login/page.js"
+    ],
+    "/(auth)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/layout.js"
     ],
     "/(auth)/register/page": [
       "static/chunks/webpack.js",
@@ -71,25 +86,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/onboarding/tour/page.js"
     ],
-    "/(authenticated)/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/dashboard/page.js"
-    ],
-    "/(authenticated)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/layout.js"
-    ],
     "/(authenticated)/dashboard/profile/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(authenticated)/dashboard/profile/page.js"
-    ],
-    "/(authenticated)/dashboard/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/dashboard/courses/page.js"
     ]
   }
 }

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { UserNav } from "@/components/navigation/user-nav";
 import { RoleSidebar } from "@/components/dashboard/layout/sidebar/role-sidebar";
 import Link from "next/link";
+import { MainNav } from "@/components/navigation/main-nav";
 
 export default async function AuthenticatedLayout({
   children,
@@ -17,12 +18,6 @@ export default async function AuthenticatedLayout({
     redirect("/login");
   }
 
-  console.log("AuthenticatedLayout - Session:", {
-    user: session.user,
-    email: session.user.email,
-    id: session.user.id
-  });
-
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -34,17 +29,7 @@ export default async function AuthenticatedLayout({
               VFX Academy
             </Link>
             {/* Main Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/dashboard/courses" className="text-sm font-medium transition-colors hover:text-primary">
-                Browse Courses
-              </Link>
-              <Link href="/dashboard/my-learning" className="text-sm font-medium transition-colors hover:text-primary">
-                My Learning
-              </Link>
-              <Link href="/dashboard/progress" className="text-sm font-medium transition-colors hover:text-primary">
-                My Progress
-              </Link>
-            </nav>
+            <MainNav />
           </div>
           {/* Search and User Nav */}
           <div className="flex items-center gap-4">

@@ -1,92 +1,81 @@
+// src/components/navigation/main-nav.tsx
+
 'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Bell } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useSession } from 'next-auth/react'
+} from "@/components/ui/forms/dropdown-menu"
 import { Button } from "@/components/ui/forms/button"
 
 export function MainNav() {
   const pathname = usePathname()
-
+  
   const navItems = [
     {
-      title: 'Dashboard',
-      href: '/dashboard',
+      href: '/courses',
+      label: 'Browse Courses',
+      exact: true
     },
     {
-      title: 'Courses',
-      href: '/dashboard/courses',
+      href: '/resources',
+      label: 'Learning Resources',
+      exact: true
     },
     {
-      title: 'Calendar',
-      href: '/dashboard/calendar',
+      href: '/help',
+      label: 'Help Center',
+      exact: true
     }
   ]
 
   return (
-    <div className="flex items-center justify-between w-full">
-      <div className="flex items-center space-x-6">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <Image 
-            src="/logo.svg" 
-            alt="Logo" 
-            width={32} 
-            height={32} 
-          />
-          <span className="font-bold text-xl">VFX Academy</span>
-        </Link>
-        
-        <nav className="flex items-center space-x-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === item.href
-                  ? "text-primary"
-                  : "text-muted-foreground"
-              )}
-            >
-              {item.title}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <UserNav />
-    </div>
-  )
-}
+    <div className="flex items-center gap-6">
+      <nav className="flex items-center space-x-6">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              pathname === item.href
+                ? "text-primary" 
+                : "text-muted-foreground"
+            )}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
 
-export function UserNav() {
-  const { data: session } = useSession()
-  
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
-            <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      {/* Resto del menú... */}
-    </DropdownMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-600" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-80">
+          <div className="flex items-center justify-between px-4 py-2 border-b">
+            <h3 className="font-semibold">Notifications</h3>
+            <Button variant="ghost" size="sm">
+              Mark all as read
+            </Button>
+          </div>
+          <div className="py-2">
+            {/* Placeholder para cuando no hay notificaciones */}
+            <div className="px-4 py-2 text-sm text-muted-foreground">
+              No new notifications
+            </div>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }

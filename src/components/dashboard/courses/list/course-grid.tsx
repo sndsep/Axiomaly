@@ -1,0 +1,37 @@
+// src/components/courses/list/course-grid.tsx
+
+import React from 'react'
+import { type CourseWithRelations } from '@/types/courses'
+import { CourseCard } from '../cards/course-card'
+import { CourseCardSkeleton } from '@/components/skeletons/course-card-skeleton'
+
+interface CourseGridProps {
+  courses: CourseWithRelations[]
+  progress: Record<string, { percentage: number; lastUpdated: Date }>
+  isLoading?: boolean
+}
+
+export function CourseGrid({ courses, progress, isLoading }: CourseGridProps) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <CourseCardSkeleton key={index} />
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {courses.map((course) => (
+        <CourseCard
+          key={course.id}
+          course={course}
+          progress={progress[course.id]?.percentage || 0}
+          lastUpdated={progress[course.id]?.lastUpdated}
+        />
+      ))}
+    </div>
+  )
+}

@@ -1,174 +1,79 @@
-// components/courses/course-filters.tsx
-import { zodResolver } from "@hookform/resolve-zodform";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import {
+// src/components/courses/filters/course-filters.tsx
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/forms/select";
-import { Input } from "@/components/ui/forms/input";
-import { Button } from "@/components/ui/forms/button";
-import { Search, SlidersHorizontal, X } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/forms/sheet";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import type { CourseLevel } from "@/types/course";
-
-const filterSchema = z.object({
-  search: z.string().optional(),
-  level: z.enum(["all", "beginner", "intermediate", "advanced"]).optional(),
-  category: z.string().optional(),
-  sort: z.enum(["recent", "popular", "rating"]).optional(),
-});
-
-type FilterValues = z.infer<typeof filterSchema>;
+} from "@/components/ui/forms/select"
+import { Input } from "@/components/ui/forms/input"
+import { type CourseFilters as FilterTypes } from '@/types/courses'
 
 interface CourseFiltersProps {
-  categories: Array<{ id: string; name: string }>;
-  onFilterChange: (values: FilterValues) => void;
-  initialValues?: Partial<FilterValues>;
+  currentFilters: FilterTypes;
+  onFilterChange: (filters: FilterTypes) => void;
 }
 
-export function CourseFilters({
-  categories,
-  onFilterChange,
-  initialValues = {},
-}: CourseFiltersProps) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const form = useForm<FilterValues>({
-    resolver: zodResolver(filterSchema),
-    defaultValues: {
-      search: "",
-      level: "all",
-      category: "all",
-      sort: "recent",
-      ...initialValues,
-    },
-  });
+export function CourseFilters({ currentFilters, onFilterChange }: CourseFiltersProps) {
+  const levelOptions = [
+    { value: 'all', label: 'All Levels' },
+    { value: 'BEGINNER', label: 'Beginner' },
+    { value: 'INTERMEDIATE', label: 'Intermediate' },
+    { value: 'ADVANCED', label: 'Advanced' },
+  ]
 
-  const handleSubmit = (values: FilterValues) => {
-    onFilterChange(values);
-  };
+  const categoryOptions = [
+    { value: 'all', label: 'All Categories' },
+    { value: '3d-modeling', label: '3D Modeling' },
+    { value: 'animation', label: 'Animation' },
+    { value: 'vfx', label: 'VFX' },
+    { value: 'rendering', label: 'Rendering' },
+  ]
 
-  const resetFilters = () => {
-    form.reset({
-      search: "",
-      level: "all",
-      category: "all",
-      sort: "recent",
-    });
-    handleSubmit(form.getValues());
-  };
-
-  const FilterContent = () => (
-    <form
-      onSubmit={form.handleSubmit(handleSubmit)}
-      className="space-y-4"
-    >
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+  return (
+    <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
+      <div className="flex-1">
         <Input
           placeholder="Search courses..."
-          className="pl-9"
-          {...form.register("search")}
+          className="max-w-sm"
+          value={currentFilters.search}
+          onChange={(e) => onFilterChange({ ...currentFilters, search: e.target.value })}
         />
       </div>
-
-      <div className="space-y-4">
+      
+      <div className="flex gap-4">
         <Select
-          onValueChange={(value) => {
-            form.setValue("level", value as CourseLevel);
-            handleSubmit(form.getValues());
-          }}
-          value={form.watch("level")}
+          value={currentFilters.level}
+          onValueChange={(value) => onFilterChange({ ...currentFilters, level: value })}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Level" />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Level" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
-            <SelectItem value="beginner">Beginner</SelectItem>
-            <SelectItem value="intermediate">Intermediate</SelectItem>
-            <SelectItem value="advanced">Advanced</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          onValueChange={(value) => {
-            form.setValue("category", value);
-            handleSubmit(form.getValues());
-          }}
-          value={form.watch("category")}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
+            {levelOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Select
-          onValueChange={(value: string) => {
-            form.setValue("sort", value as "recent" | "popular" | "rating");
-            handleSubmit(form.getValues());
-          }}
-          value={form.watch("sort")}
+          value={currentFilters.category}
+          onValueChange={(value) => onFilterChange({ ...currentFilters, category: value })}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Sort by" />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="recent">Most Recent</SelectItem>
-            <SelectItem value="popular">Most Popular</SelectItem>
-            <SelectItem value="rating">Highest Rated</SelectItem>
+            {categoryOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={resetFilters}
-        >
-          <X className="mr-2 h-4 w-4" />
-          Reset Filters
-        </Button>
       </div>
-    </form>
-  );
-
-  if (isMobile) {
-    return (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Filters
-          </Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Course Filters</SheetTitle>
-          </SheetHeader>
-          <FilterContent />
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  return <FilterContent />;
+    </div>
+  )
 }
