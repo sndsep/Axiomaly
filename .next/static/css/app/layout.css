@@ -1034,8 +1034,14 @@ video {
 .w-7 {
   width: 1.75rem;
 }
+.w-72 {
+  width: 18rem;
+}
 .w-8 {
   width: 2rem;
+}
+.w-80 {
+  width: 20rem;
 }
 .w-9 {
   width: 2.25rem;
@@ -1060,9 +1066,6 @@ video {
 }
 .w-max {
   width: max-content;
-}
-.w-80 {
-  width: 20rem;
 }
 .min-w-\[200px\] {
   min-width: 200px;
@@ -1329,9 +1332,6 @@ video {
 }
 .overflow-hidden {
   overflow: hidden;
-}
-.overflow-y-auto {
-  overflow-y: auto;
 }
 .whitespace-nowrap {
   white-space: nowrap;
@@ -1747,6 +1747,9 @@ video {
 .pl-10 {
   padding-left: 2.5rem;
 }
+.pl-2 {
+  padding-left: 0.5rem;
+}
 .pl-4 {
   padding-left: 1rem;
 }
@@ -1783,8 +1786,8 @@ video {
 .pt-8 {
   padding-top: 2rem;
 }
-.pt-5 {
-  padding-top: 1.25rem;
+.pt-\[56\.25\%\] {
+  padding-top: 56.25%;
 }
 .text-left {
   text-align: left;
@@ -2888,6 +2891,10 @@ code {
     max-width: 24rem;
   }
 
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .sm\:flex-row {
     flex-direction: row;
   }
@@ -2928,11 +2935,6 @@ code {
 
   .sm\:rounded-lg {
     border-radius: var(--radius);
-  }
-
-  .sm\:px-6 {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
   }
 
   .sm\:pr-20 {
@@ -3064,11 +3066,6 @@ code {
     padding: 2rem;
   }
 
-  .md\:px-8 {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-
   .md\:pb-0 {
     padding-bottom: 0px;
   }
@@ -3079,10 +3076,6 @@ code {
 
   .md\:pt-4 {
     padding-top: 1rem;
-  }
-
-  .md\:pl-64 {
-    padding-left: 16rem;
   }
 }
  

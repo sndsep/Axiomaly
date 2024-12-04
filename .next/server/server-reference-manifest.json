@@ -1,14 +1,5 @@
 {
-  "node": {
-    "508a2e9ed5f9aa108a3024f49c1f3197c86041c9": {
-      "workers": {
-        "app/(auth)/onboarding/tour/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FVolumes%2FDockDisk%2F10%20PROJECTS%2FAxiomaly%2Fsrc%2Fapp%2F(auth)%2Fonboarding%2Ftour%2Fpage.tsx%22%2C%5B%22%24%24ACTION_0%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/(auth)/onboarding/tour/page": "rsc"
-      }
-    }
-  },
+  "node": {},
   "edge": {},
-  "encryptionKey": "Mjy0isCIkcvW/lqifxxwU1PkZb4nIOVrIU68o5MC9F0="
+  "encryptionKey": "da8Ky1ecFzpCrZ/XV6uzjQCKbC/Ukgs7RTQmSL7ynrE="
 }

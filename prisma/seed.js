@@ -6,13 +6,14 @@ const bcrypt = require('bcryptjs')
 async function cleanDatabase() {
   console.log('🧹 Cleaning database...')
   
+  await prisma.review.deleteMany()
   await prisma.activity.deleteMany()
   await prisma.deadline.deleteMany()
   await prisma.prerequisite.deleteMany()
   await prisma.curriculum.deleteMany()
   await prisma.specialization.deleteMany()
   await prisma.studentProgress.deleteMany()
-  await prisma.enrollment.deleteMany() // This now includes the progress
+  await prisma.enrollment.deleteMany()
   await prisma.surveyResponse.deleteMany()
   await prisma.resource.deleteMany()
   await prisma.lesson.deleteMany()

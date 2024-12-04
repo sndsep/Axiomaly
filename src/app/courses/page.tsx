@@ -1,62 +1,37 @@
-// src/app/courses/page.tsx
+// src/app/dashboard/courses/page.tsx
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { CourseFilters } from '@/components/courses/filters/course-filters'
-import { CourseGrid } from '@/components/courses/list/course-grid'
-import { CoursePagination } from '@/components/courses/list/course-pagination'
-import { type CourseWithRelations, type CourseFilters as FilterTypes } from '@/types/courses'
+import { useSearchParams } from 'next/navigation'
+import { CourseWithRelations } from '@/types/courses'
 import { useToast } from '@/components/ui/hooks/use-toast'
+import { Input } from '@/components/ui/forms/input'
+import { Select } from '@/components/ui/forms/select'
 
-interface CoursesResponse {
+interface EnrolledCoursesResponse {
   data: CourseWithRelations[]
   totalPages: number
   totalItems: number
 }
 
-export default function BrowseCoursesPage() {
+export default function DashboardCoursesPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const { toast } = useToast()
   
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [data, setData] = useState<CoursesResponse | null>(null)
+  const [data, setData] = useState<EnrolledCoursesResponse | null>(null)
 
-  // Get current filter values
-  const getCurrentFilters = useCallback(() => {
-    const params = {
-      search: searchParams.get('search') || '',
-      level: searchParams.get('level') || undefined,
-      category: searchParams.get('category') || undefined,
-      page: Number(searchParams.get('page')) || 1,
-      limit: Number(searchParams.get('limit')) || 10,
-      sort: searchParams.get('sort') || 'createdAt-desc'
-    }
-    return params
-  }, [searchParams])
-
-  // Fetch courses using existing service layer
-  const fetchCourses = useCallback(async () => {
-    const filters = getCurrentFilters()
-    const params = new URLSearchParams()
-
-    // Add only defined filters to query params
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined) {
-        params.append(key, value.toString())
-      }
-    })
-
+  const fetchEnrolledCourses = useCallback(async () => {
+    const params = new URLSearchParams(searchParams)
+    
     try {
-      const response = await fetch(`/api/courses?${params}`)
+      const response = await fetch(`/api/user/enrolled-courses?${params}`)
       if (!response.ok) throw new Error('Failed to fetch courses')
       return await response.json()
     } catch (err) {
       throw err
     }
-  }, [getCurrentFilters])
+  }, [searchParams])
 
   useEffect(() => {
     let mounted = true
@@ -65,22 +40,18 @@ export default function BrowseCoursesPage() {
       if (!mounted) return
       
       setIsLoading(true)
-      setError(null)
 
       try {
-        const result = await fetchCourses()
+        const result = await fetchEnrolledCourses()
         if (mounted) {
           setData(result)
         }
       } catch (err) {
-        if (mounted) {
-          setError(err instanceof Error ? err.message : 'An error occurred')
-          toast({
-            title: "Error",
-            description: "Failed to load courses. Please try again.",
-            variant: "destructive",
-          })
-        }
+        toast({
+          title: "Error",
+          description: "Failed to load your courses. Please try again.",
+          variant: "destructive",
+        })
       } finally {
         if (mounted) {
           setIsLoading(false)
@@ -89,85 +60,35 @@ export default function BrowseCoursesPage() {
     }
 
     loadCourses()
-
-    return () => {
-      mounted = false
-    }
-  }, [fetchCourses, toast])
-
-  // Handle filter changes
-  const handleFilterChange = useCallback((newFilters: FilterTypes) => {
-    const params = new URLSearchParams(searchParams)
-    
-    // Only add defined filters
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
-    })
-    
-    // Reset to first page when filters change
-    params.set('page', '1')
-    
-    router.push(`/courses?${params.toString()}`)
-  }, [searchParams, router])
-
-  // Handle page change
-  const handlePageChange = useCallback((page: number) => {
-    const params = new URLSearchParams(searchParams)
-    params.set('page', page.toString())
-    router.push(`/courses?${params.toString()}`)
-  }, [searchParams, router])
+    return () => { mounted = false }
+  }, [fetchEnrolledCourses, toast])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Browse All Courses</h1>
-        <p className="text-gray-600 mb-6">
-          Discover our comprehensive collection of VFX courses and start your learning journey
-        </p>
-        <CourseFilters 
-          currentFilters={getCurrentFilters()}
-          onFilterChange={handleFilterChange}
+    <div className="container py-8">
+      <h1 className="text-2xl font-bold mb-6">My Courses</h1>
+      
+      <div className="flex items-center gap-4 mb-6">
+        <Input
+          type="search"
+          placeholder="Search courses..."
+          className="flex-1"
         />
+        <Select defaultValue="all">
+          <option value="all">All Levels</option>
+        </Select>
+        <Select defaultValue="all">
+          <option value="all">All Categories</option>
+        </Select>
       </div>
 
-      {error ? (
-        <div className="text-center py-8">
-          <p className="text-red-600">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 text-blue-600 hover:underline"
-          >
-            Try again
-          </button>
-        </div>
+      {isLoading ? (
+        <div className="text-center py-8">Loading...</div>
+      ) : data?.data && data.data.length > 0 ? (
+        <CourseGrid courses={data.data} />
       ) : (
-        <>
-          <CourseGrid 
-            courses={data?.data || []}
-            isLoading={isLoading}
-            showEnrollButton
-          />
-
-          {data && data.totalPages > 1 && (
-            <div className="mt-8">
-              <CoursePagination
-                currentPage={getCurrentFilters().page}
-                totalPages={data.totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
-          )}
-
-          {!isLoading && data?.data.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No courses found matching your criteria.</p>
-            </div>
-          )}
-        </>
+        <div className="text-center py-8">
+          <p className="text-gray-600">No courses found. Browse our course catalog to get started.</p>
+        </div>
       )}
     </div>
   )

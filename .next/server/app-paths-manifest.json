@@ -1,5 +1,7 @@
 {
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/(authenticated)/dashboard/page": "app/(authenticated)/dashboard/page.js",
-  "/(authenticated)/dashboard/profile/page": "app/(authenticated)/dashboard/profile/page.js"
+  "/courses/page": "app/courses/page.js",
+  "/api/dashboard/enrolled-courses/route": "app/api/dashboard/enrolled-courses/route.js",
+  "/(authenticated)/dashboard/courses/page": "app/(authenticated)/dashboard/courses/page.js",
+  "/(auth)/[...nextauth]/route": "app/(auth)/[...nextauth]/route.js",
+  "/(authenticated)/dashboard/page": "app/(authenticated)/dashboard/page.js"
 }
