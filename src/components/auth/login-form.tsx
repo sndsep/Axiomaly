@@ -1,3 +1,4 @@
+// src/components/auth/login-form.tsx
 'use client';
 
 import { useState } from 'react';
@@ -12,14 +13,22 @@ export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
+    setError('');
 
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+
+    if (!email || !password) {
+      setError('Please provide both email and password');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const result = await signIn('credentials', {
@@ -29,19 +38,24 @@ export function LoginForm() {
       });
 
       if (result?.error) {
+        setError('Invalid email or password');
         toast({
-          title: 'Error',
-          description: 'Invalid credentials',
+          title: 'Authentication Failed',
+          description: 'Please check your credentials and try again',
           variant: 'destructive',
         });
         return;
       }
 
-      router.push('/dashboard');
+      if (result?.ok) {
+        router.push('/dashboard');
+        router.refresh();
+      }
     } catch (error) {
+      setError('An unexpected error occurred');
       toast({
         title: 'Error',
-        description: 'Something went wrong',
+        description: 'There was a problem signing in. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -51,7 +65,13 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6 mt-8">
-      <div>
+      {error && (
+        <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
@@ -59,11 +79,12 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
+          disabled={isLoading}
           className="mt-2"
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <Input
           id="password"
@@ -71,6 +92,7 @@ export function LoginForm() {
           type="password"
           autoComplete="current-password"
           required
+          disabled={isLoading}
           className="mt-2"
         />
       </div>
