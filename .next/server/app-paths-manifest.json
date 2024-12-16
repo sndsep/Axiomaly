@@ -1,10 +1,7 @@
 {
-  "/api/dashboard/enrolled-courses/route": "app/api/dashboard/enrolled-courses/route.js",
-  "/courses/page": "app/courses/page.js",
-  "/(auth)/[...nextauth]/route": "app/(auth)/[...nextauth]/route.js",
+  "/api/onboarding/complete/route": "app/api/onboarding/complete/route.js",
+  "/api/onboarding/profile/route": "app/api/onboarding/profile/route.js",
   "/(authenticated)/dashboard/page": "app/(authenticated)/dashboard/page.js",
-  "/(authenticated)/dashboard/courses/page": "app/(authenticated)/dashboard/courses/page.js",
-  "/(authenticated)/dashboard/progress/page": "app/(authenticated)/dashboard/progress/page.js",
-  "/(authenticated)/dashboard/calendar/page": "app/(authenticated)/dashboard/calendar/page.js",
-  "/(authenticated)/dashboard/profile/page": "app/(authenticated)/dashboard/profile/page.js"
+  "/(auth)/onboarding/profile/page": "app/(auth)/onboarding/profile/page.js",
+  "/(auth)/onboarding/tour/page": "app/(auth)/onboarding/tour/page.js"
 }

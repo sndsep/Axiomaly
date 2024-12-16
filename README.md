@@ -34,3 +34,73 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# Database Setup
+
+## Prerequisites
+- PostgreSQL installed locally
+- Node.js (version 18 or higher)
+- npm or pnpm
+
+## Setup Steps
+
+### 1. Configure PostgreSQL
+1. Create a new PostgreSQL database:
+```bash
+createdb your_database_name
+```
+
+### 2. Set Up Environment Variables
+1. Copy the `.env.example` file to `.env`:
+```bash
+cp .env.example .env
+```
+
+2. Update the database URL in your `.env` file:
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/your_database_name"
+```
+
+### 3. Install Dependencies
+```bash
+npm install
+# or
+pnpm install
+```
+
+### 4. Set Up Prisma
+1. Run Prisma migrations:
+```bash
+npx prisma migrate dev
+```
+
+2. Generate Prisma Client:
+```bash
+npx prisma generate
+```
+
+3. (Optional) Seed the database:
+```bash
+npx prisma db seed
+```
+
+### 5. Verify Installation
+1. You can explore your database using Prisma Studio:
+```bash
+npx prisma studio
+```
+
+## Common Troubleshooting
+
+- If you have connection issues with PostgreSQL, verify that:
+  - PostgreSQL is running on your system
+  - The credentials in DATABASE_URL are correct
+  - Port 5432 is available
+
+- If migrations fail:
+  - Verify that the database is empty for the first migration
+  - Ensure there are no conflicts with previous migrations
+
+## Additional Resources
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)

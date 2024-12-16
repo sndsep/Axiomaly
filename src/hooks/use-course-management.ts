@@ -2,10 +2,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/hooks/use-toast';
 import type { CourseFilters, Course, CourseProgress } from '@/types/course';
+import { useState } from 'react';
 
 export function useCourseManagement() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const useCoursesList = (filters: CourseFilters = {}) => {
     return useQuery({
@@ -41,40 +44,28 @@ export function useCourseManagement() {
     });
   };
 
-  const useEnrollCourse = () => {
-    return useMutation({
-      mutationFn: async (courseId: string) => {
-        const res = await fetch(`/api/courses/${courseId}/enroll`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+  const enrollInCourse = async (courseId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/courses/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ courseId }),
+      });
 
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.message || 'Failed to enroll in course');
-        }
+      if (!response.ok) {
+        throw new Error('Failed to enroll in course');
+      }
 
-        return res.json();
-      },
-      onSuccess: (_, courseId) => {
-        queryClient.invalidateQueries(['enrolled-courses']);
-        queryClient.invalidateQueries(['courses']);
-        
-        toast({
-          title: "¡Inscripción exitosa!",
-          description: "Te has inscrito al curso correctamente.",
-        });
-      },
-      onError: (error: Error) => {
-        toast({
-          variant: "destructive",
-          title: "Error de inscripción",
-          description: error.message,
-        });
-      },
-    });
+      toast.success('Successfully enrolled in course');
+    } catch (err) {
+      setError('An error occurred while enrolling in the course');
+      toast.error('Failed to enroll in course');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const useCourseProgress = (courseId: string) => {
@@ -92,7 +83,9 @@ export function useCourseManagement() {
   return {
     useCoursesList,
     useEnrolledCourses,
-    useEnrollCourse,
+    enrollInCourse,
     useCourseProgress,
+    isLoading,
+    error,
   };
 }

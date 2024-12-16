@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/forms/card"
 import { Progress } from "@/components/ui/progress"
-import { Users, Clock, Award, Star } from "lucide-react"
+import { Users, Clock, Award, Star, UserIcon } from "lucide-react"
 
 interface CourseStatsProps {
   stats: {
-    enrolledStudents: number
+    totalStudents: number
+    newStudents: number
     averageProgress: number
     completionRate: number
     averageRating: number
@@ -16,38 +17,34 @@ export function CourseStats({ stats }: CourseStatsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Estudiantes Inscritos</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+          <UserIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.enrolledStudents}</div>
-          <Progress 
-            value={stats.averageProgress} 
-            className="h-2 mt-2" 
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {stats.averageProgress}% promedio de progreso
+          <div className="text-2xl font-bold">{stats.totalStudents}</div>
+          <p className="text-xs text-muted-foreground">
+            +{stats.newStudents} from last month
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Duración Total</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Duration</CardTitle>
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalDuration}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            Tiempo estimado de completitud
+            Estimated completion time
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tasa de Finalización</CardTitle>
+          <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
           <Award className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -57,14 +54,14 @@ export function CourseStats({ stats }: CourseStatsProps) {
             className="h-2 mt-2" 
           />
           <p className="text-xs text-muted-foreground mt-1">
-            de estudiantes completan el curso
+            of students complete the course
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Calificación Promedio</CardTitle>
+          <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
           <Star className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
